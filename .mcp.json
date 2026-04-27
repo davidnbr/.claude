@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "~/.config/Claude/Cache"
-      ]
-    },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"]
@@ -25,14 +17,6 @@
       "args": ["awslabs.core-mcp-server@latest"],
       "timeout": 360000,
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "aws-canvas": {
-      "command": "uvx",
-      "args": ["awslabs.nova-canvas-mcp-server@latest"],
-      "env": {
-        "AWS_REGION": "us-east-1",
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
