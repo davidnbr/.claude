@@ -1,0 +1,1 @@
+/nix/store/a05lg9cfd1jgjdakwz2i8z0qx23d4l0a-home-manager-files/.claude/commands/CLAUDE.md

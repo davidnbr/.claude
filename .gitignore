@@ -1,0 +1,32 @@
+# Claude dirs
+backups
+cache
+debug
+file-history
+hud
+ide
+paste-cache
+plans
+plugins
+projects
+sessions
+shell-snapshots
+statsig
+tasks
+teams
+telemetry
+todos
+.omc*
+
+# node
+history.jsonl
+.credentials*
+*.backup.*
+*-cache.json
+.session-stats.json
+.caveman-*
+
+# keys
+*.pem*
+*.key*
+*.keys*

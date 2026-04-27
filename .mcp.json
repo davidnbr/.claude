@@ -1,0 +1,66 @@
+{
+  "filesystem": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "~/.config/Claude/Cache"
+    ]
+  },
+  "memory": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"]
+  },
+  "terraform-registry": {
+    "command": "docker",
+    "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server"]
+  },
+  "aws-knowledge-mcp-server": {
+    "command": "npx",
+    "args": ["mcp-remote", "https://knowledge-mcp.global.api.aws"]
+  },
+  "aws-core": {
+    "command": "uvx",
+    "args": ["awslabs.core-mcp-server@latest"],
+    "timeout": 360000,
+    "env": {
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  },
+  "aws-canvas": {
+    "command": "uvx",
+    "args": ["awslabs.nova-canvas-mcp-server@latest"],
+    "env": {
+      "AWS_PROFILE": "davidnbr98-training",
+      "AWS_REGION": "us-east-1",
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  },
+  "aws-terraform": {
+    "command": "uvx",
+    "args": ["awslabs.terraform-mcp-server@latest"],
+    "env": {
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  },
+  "nixos": {
+    "command": "uvx",
+    "args": ["mcp-nixos"],
+    "env": {
+      "CACHE_ENABLED": "true",
+      "MINIMAL_RESPONSES": "true"
+    }
+  },
+  "calculator": {
+    "command": "uvx",
+    "args": ["mcp-server-calculator"]
+  },
+  "time": {
+    "command": "uvx",
+    "args": ["mcp-server-time"]
+  },
+  "microsoft-learn": {
+    "type": "http",
+    "url": "https://learn.microsoft.com/api/mcp"
+  }
+}
