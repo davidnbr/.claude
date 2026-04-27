@@ -3,3 +3,8 @@
 .claude/file-history/
 .claude/session-env/
 node_modules/
+.env*
+credentials*
+.credentials*
+*.pem*
+*.key*
