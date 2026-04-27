@@ -256,9 +256,9 @@ def before_send(event, hint):
 # REQUIRED controls:
 # 1. MFA for all workforce members accessing PHI
 # 2. Unique user IDs (no shared/generic accounts)
-# 3. Session timeout: ≤15 minutes idle (NIST 800-63B)
+# 3. Session timeout: ≤15 minutes idle (NIST SP 800-53 AC-12; HHS OCR guidance)
 # 4. Account lockout after failed attempts (≤6 attempts)
-# 5. Password complexity per NIST 800-63B
+# 5. Password complexity per NIST SP 800-63B §5.1.1 (memorized secrets)
 
 # Check session configuration:
 SESSION_COOKIE_AGE = 900         # 15 minutes

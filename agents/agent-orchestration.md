@@ -144,7 +144,7 @@ Step 6: CONTEXT SAVE (context-manager) [for complex features]
 
 ```
 WORKFLOW: database-performance
-Step 1: INVESTIGATE (database-optimization)
+Step 1: INVESTIGATE (database-architect)
    └─ Analyze slow query logs, EXPLAIN plans
    └─ Output: Performance report, bottleneck identification
    └─ Pass criteria: Clear root cause identified
@@ -152,7 +152,7 @@ Step 2: ARCHITECTURE REVIEW (database-architect) [if schema changes needed]
    └─ Review schema design, indexing strategy
    └─ Output: Optimization recommendations
    └─ Pass criteria: Maintains data integrity, backward compatible
-Step 3: IMPLEMENTATION (database-optimization)
+Step 3: IMPLEMENTATION (database-architect)
    └─ Create indexes, optimize queries, add caching
    └─ Output: SQL migrations, query rewrites
    └─ Pass criteria: Measurable performance improvement
@@ -160,7 +160,7 @@ Step 4: REVIEW (code-reviewer)
    └─ Review migrations, ensure no regressions
    └─ Output: Approval or rejection
    └─ If REJECTED → return to Step 3
-Step 5: VALIDATION (database-optimization)
+Step 5: VALIDATION (database-architect)
    └─ Run benchmarks, compare before/after
    └─ Output: Performance metrics
 ```
@@ -413,10 +413,10 @@ Step 6: FINAL REVIEW (code-reviewer)
 | Issue Type   | Start With            | Key Reviewers                        |
 | ------------ | --------------------- | ------------------------------------ |
 | API/Backend  | backend-architect     | code-reviewer                        |
-| Database     | database-architect    | database-optimization, code-reviewer |
+| Database     | database-architect    | database-architect, code-reviewer |
 | DevOps/Infra | backend-architect     | devops-engineer, code-reviewer       |
 | Errors/Bugs  | error-detective       | backend-architect, code-reviewer     |
-| Performance  | database-optimization | backend-architect                    |
+| Performance  | database-architect | backend-architect                    |
 | Security     | code-reviewer         | backend-architect                    |
 | HIPAA/PHI    | hipaa-compliance-reviewer | backend-architect, code-reviewer |
 | Integration  | search-specialist     | mcp-expert, code-reviewer            |

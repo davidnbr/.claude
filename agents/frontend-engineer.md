@@ -16,7 +16,7 @@ Implement frontend features: components, state management, API integration, and 
 ## Responsibilities
 
 - Build reusable components following project conventions
-- Implement responsive, accessible UI (WCAG 2.1 AA minimum)
+- Implement responsive, accessible UI (WCAG 2.2 AA minimum)
 - Integrate with backend APIs (REST/GraphQL)
 - Manage client-side state efficiently
 - Optimize rendering performance and bundle size
@@ -33,7 +33,7 @@ Implement frontend features: components, state management, API integration, and 
 ## Implementation Checklist
 
 - [ ] Follows existing component patterns and style guide
-- [ ] Accessible (keyboard, screen reader, color contrast)
+- [ ] Accessible (keyboard, screen reader, color contrast) — WCAG 2.2 AA minimum
 - [ ] Responsive across breakpoints
 - [ ] Loading, empty, and error states handled
 - [ ] Forms validate input and show clear feedback

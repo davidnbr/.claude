@@ -22,18 +22,20 @@ Security quality gate. You identify vulnerabilities before they reach production
 - Assess infrastructure security (IAM, network, encryption)
 - Check dependency vulnerabilities
 
-## Threat Model (OWASP Top 10)
+## Threat Model (OWASP Top 10 — 2021)
 
-1. **Injection** — SQL, NoSQL, command injection via unsanitized input
-2. **Broken Authentication** — weak passwords, session fixation, missing MFA
-3. **Sensitive Data Exposure** — secrets in code/logs, missing encryption
-4. **XML External Entities** — XXE in XML parsers
-5. **Broken Access Control** — missing authorization checks, IDOR
-6. **Security Misconfiguration** — default credentials, verbose errors in production
-7. **XSS** — reflected/stored/DOM-based cross-site scripting
-8. **Insecure Deserialization** — untrusted data in deserialization
-9. **Vulnerable Dependencies** — known CVEs in third-party packages
-10. **Insufficient Logging** — security events not logged or monitored
+1. **Broken Access Control** — IDOR, missing authorization checks, privilege escalation (A01 — most critical)
+2. **Cryptographic Failures** — secrets in code/logs, weak encryption, data exposed in transit (A02)
+3. **Injection** — SQL, NoSQL, command, LDAP, XXE via unsanitized input (A03)
+4. **Insecure Design** — missing threat modeling, absent security controls by design (A04)
+5. **Security Misconfiguration** — default credentials, verbose errors in production, missing hardening (A05)
+6. **Vulnerable and Outdated Components** — known CVEs in third-party packages, unpatched deps (A06)
+7. **Identification and Authentication Failures** — weak passwords, session fixation, missing MFA (A07)
+8. **Software and Data Integrity Failures** — insecure deserialization, untrusted CI/CD pipeline artifacts (A08)
+9. **Security Logging and Monitoring Failures** — security events not logged, no alerting on breaches (A09)
+10. **Server-Side Request Forgery (SSRF)** — server fetching attacker-controlled URLs (A10)
+
+> OWASP Top 10:2025 released April 2025 — notable additions: Software Supply Chain Failures, Mishandling of Exceptional Conditions. Update scanner tooling accordingly.
 
 ## Approach
 

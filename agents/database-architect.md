@@ -168,12 +168,15 @@ When planning schema changes:
 
 | Query Pattern | Index Type |
 |---------------|-----------|
-| Equality lookup | B-tree |
-| Range scan | B-tree |
+| Equality lookup, range scan, ORDER BY | B-tree (default) |
+| Equality only, no range needed | Hash |
 | Full-text search | GIN |
-| JSONB containment | GIN |
-| Filtered subset | Partial index |
-| Frequently accessed columns | Covering index |
+| JSONB containment / array membership (`@>`, `&&`) | GIN |
+| Geometric / spatial / nearest-neighbor (`<->`) | GiST |
+| Non-balanced spatial structures (quadtrees, k-d trees) | SP-GiST |
+| Large append-only table, correlated physical order (time-series) | BRIN |
+| Filtered subset of rows (e.g. `WHERE deleted_at IS NULL`) | Partial index |
+| Avoid heap access for frequently read columns | Covering index (`INCLUDE`) |
 
 ## Safe Migration Rules
 
