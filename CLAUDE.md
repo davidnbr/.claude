@@ -1,5 +1,5 @@
 <!-- OMC:START -->
-<!-- OMC:VERSION:4.9.0 -->
+<!-- OMC:VERSION:4.11.2 -->
 
 # oh-my-claudecode - Intelligent Multi-Agent Orchestration
 
@@ -7,12 +7,11 @@ You are running with oh-my-claudecode (OMC), a multi-agent orchestration layer f
 Coordinate specialized agents, tools, and skills so work is completed accurately and efficiently.
 
 <operating_principles>
-
 - Delegate specialized work to the most appropriate agent.
 - Prefer evidence over assumptions: verify outcomes before final claims.
 - Choose the lightest-weight path that preserves quality.
 - Consult official docs before implementing with SDKs/frameworks/APIs.
-  </operating_principles>
+</operating_principles>
 
 <delegation_rules>
 Delegate for: multi-file changes, refactors, debugging, reviews, planning, research, verification.
@@ -25,33 +24,13 @@ Route code to `executor` (use `model=opus` for complex work). Uncertain SDK usag
 Direct writes OK for: `~/.claude/**`, `.omc/**`, `.claude/**`, `CLAUDE.md`, `AGENTS.md`.
 </model_routing>
 
-<agent_catalog>
-Prefix: `oh-my-claudecode:`. See `agents/*.md` for full prompts.
-
-explore (haiku), analyst (opus), planner (opus), architect (opus), debugger (sonnet), executor (sonnet), verifier (sonnet), tracer (sonnet), security-reviewer (sonnet), code-reviewer (opus), test-engineer (sonnet), designer (sonnet), writer (haiku), qa-tester (sonnet), scientist (sonnet), document-specialist (sonnet), git-master (sonnet), code-simplifier (opus), critic (opus)
-</agent_catalog>
-
-<tools>
-External AI: `/team N:executor "task"`, `omc team N:codex|gemini "..."`, `omc ask <claude|codex|gemini>`, `/ccg`
-OMC State: `state_read`, `state_write`, `state_clear`, `state_list_active`, `state_get_status`
-Teams: `TeamCreate`, `TeamDelete`, `SendMessage`, `TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`
-Notepad: `notepad_read`, `notepad_write_priority`, `notepad_write_working`, `notepad_write_manual`
-Project Memory: `project_memory_read`, `project_memory_write`, `project_memory_add_note`, `project_memory_add_directive`
-Code Intel: LSP (`lsp_hover`, `lsp_goto_definition`, `lsp_find_references`, `lsp_diagnostics`, etc.), AST (`ast_grep_search`, `ast_grep_replace`), `python_repl`
-</tools>
-
 <skills>
 Invoke via `/oh-my-claudecode:<name>`. Trigger patterns auto-detect keywords.
-
-Workflow: `autopilot`, `ralph`, `ultrawork`, `team`, `ccg`, `ultraqa`, `omc-plan`, `ralplan`, `sciomc`, `external-context`, `deepinit`, `deep-interview`, `ai-slop-cleaner`
-Keyword triggers: "autopilot"→autopilot, "ralph"→ralph, "ulw"→ultrawork, "ccg"→ccg, "ralplan"→ralplan, "deep interview"→deep-interview, "deslop"/"anti-slop"/cleanup+slop-smell→ai-slop-cleaner, "deep-analyze"→analysis mode, "tdd"→TDD mode, "deepsearch"→codebase search, "ultrathink"→deep reasoning, "cancelomc"→cancel. Team orchestration is explicit via `/team`.
-Utilities: `ask-codex`, `ask-gemini`, `cancel`, `note`, `learner`, `omc-setup`, `mcp-setup`, `hud`, `omc-doctor`, `omc-help`, `trace`, `release`, `project-session-manager`, `skill`, `writer-memory`, `ralph-init`, `configure-notifications`, `learn-about-omc` (`trace` is the evidence-driven tracing lane)
+Tier-0 workflows include `autopilot`, `ultrawork`, `ralph`, `team`, and `ralplan`.
+Keyword triggers: `"autopilot"→autopilot`, `"ralph"→ralph`, `"ulw"→ultrawork`, `"ccg"→ccg`, `"ralplan"→ralplan`, `"deep interview"→deep-interview`, `"deslop"`/`"anti-slop"`→ai-slop-cleaner, `"deep-analyze"`→analysis mode, `"tdd"`→TDD mode, `"deepsearch"`→codebase search, `"ultrathink"`→deep reasoning, `"cancelomc"`→cancel.
+Team orchestration is explicit via `/team`.
+Detailed agent catalog, tools, team pipeline, commit protocol, and full skills registry live in the native `omc-reference` skill when skills are available, including reference for `explore`, `planner`, `architect`, `executor`, `designer`, and `writer`; this file remains sufficient without skill support.
 </skills>
-
-<team_pipeline>
-Stages: `team-plan` → `team-prd` → `team-exec` → `team-verify` → `team-fix` (loop).
-Fix loop bounded by max attempts. `team ralph` links both modes.
-</team_pipeline>
 
 <verification>
 Verify before claiming completion. Size appropriately: small→haiku, standard→sonnet, large/security→opus.
@@ -64,39 +43,6 @@ Keep authoring and review as separate passes: writer pass creates or revises con
 Never self-approve in the same active context; use `code-reviewer` or `verifier` for the approval pass.
 Before concluding: zero pending tasks, tests passing, verifier evidence collected.
 </execution_protocols>
-
-<commit_protocol>
-Use git trailers to preserve decision context in every commit message.
-Format: conventional commit subject line, optional body, then structured trailers.
-
-Trailers (include when applicable — skip for trivial commits like typos or formatting):
-
-- `Constraint:` active constraint that shaped this decision
-- `Rejected:` alternative considered | reason for rejection
-- `Directive:` warning or instruction for future modifiers of this code
-- `Confidence:` high | medium | low
-- `Scope-risk:` narrow | moderate | broad
-- `Not-tested:` edge case or scenario not covered by tests
-
-Example:
-
-```
-fix(auth): prevent silent session drops during long-running ops
-
-Auth service returns inconsistent status codes on token expiry,
-so the interceptor catches all 4xx and triggers inline refresh.
-
-Constraint: Auth service does not support token introspection
-Constraint: Must not add latency to non-expired-token paths
-Rejected: Extend token TTL to 24h | security policy violation
-Rejected: Background refresh on timer | race condition with concurrent requests
-Confidence: high
-Scope-risk: narrow
-Directive: Error handling is intentionally broad (all 4xx) — do not narrow without verifying upstream behavior
-Not-tested: Auth service cold-start latency >500ms
-```
-
-</commit_protocol>
 
 <hooks_and_context>
 Hooks inject `<system-reminder>` tags. Key patterns: `hook success: Success` (proceed), `[MAGIC KEYWORD: ...]` (invoke skill), `The boulder never stops` (ralph/ultrawork active).
@@ -119,7 +65,6 @@ Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 <!-- OMC:END -->
 
 <!-- User customizations (migrated from previous CLAUDE.md) -->
-
 # Global Claude Instructions
 
 These instructions apply to all projects when using Claude Code or VS Code with Claude.
@@ -128,18 +73,18 @@ These instructions apply to all projects when using Claude Code or VS Code with 
 
 You have access to specialized sub-agents in `~/.claude/agents/`. Delegate complex tasks to the appropriate specialist:
 
-| Agent                         | Role              | When to Use                                      |
-| ----------------------------- | ----------------- | ------------------------------------------------ |
+| Agent | Role | When to Use |
+|-------|------|-------------|
 | `principal-software-engineer` | Lead/Orchestrator | Complex multi-step tasks, architecture decisions |
-| `backend-architect`           | Architect         | API design, service boundaries, scalability      |
-| `database-architect`          | DB Architect      | Data modeling, schema design, CQRS               |
-| `devops-engineer`             | Implementer       | CI/CD, Terraform, Docker, ECS                    |
-| `code-reviewer`               | Quality Gate      | PR reviews, security audits                      |
-| `error-detective`             | Investigator      | Log analysis, root cause analysis                |
-| `search-specialist`           | Researcher        | Documentation, best practices research           |
-| `context-manager`             | Coordinator       | Multi-session context preservation               |
-| `task-decomposition-expert`   | Planner           | Breaking down complex tasks                      |
-| `architect-review`            | Reviewer          | Architecture review and validation               |
+| `backend-architect` | Architect | API design, service boundaries, scalability |
+| `database-architect` | DB Architect | Data modeling, schema design, CQRS |
+| `devops-engineer` | Implementer | CI/CD, Terraform, Docker, ECS |
+| `code-reviewer` | Quality Gate | PR reviews, security audits |
+| `error-detective` | Investigator | Log analysis, root cause analysis |
+| `search-specialist` | Researcher | Documentation, best practices research |
+| `context-manager` | Coordinator | Multi-session context preservation |
+| `task-decomposition-expert` | Planner | Breaking down complex tasks |
+| `architect-review` | Reviewer | Architecture review and validation |
 
 See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 
@@ -167,6 +112,22 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 2. Check for `AGENTS.md` in the project root for project-specific conventions
 3. Follow existing codebase patterns over generic best practices
 4. Run linters/formatters before committing
+
+## Verified Answer Protocol (MANDATORY)
+
+**Always** apply the `verified-answer` skill protocol when:
+- Answering any technical question (tool syntax, API, CLI flags, config keys, argument names)
+- Searching for information or documentation
+- Debugging errors or root-cause analysis
+- Verifying facts, defaults, quotas, limits, or version-specific behavior
+- Answering "does X support Y" or "how do I do Z"
+
+Rules that are NEVER optional:
+- Look up verifiable claims against primary sources before stating them
+- Cite every non-trivial technical claim with a fetched URL
+- Say "I could not verify this" instead of guessing
+- Never reconstruct URLs from memory — only cite URLs returned by tool calls
+- Flag uncertainty explicitly; do not paper over it with confident-sounding prose
 
 ## Technology Preferences
 

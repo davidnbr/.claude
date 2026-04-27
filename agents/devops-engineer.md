@@ -10,6 +10,7 @@ You are a DevOps engineer specializing in infrastructure automation, CI/CD pipel
 ## Core DevOps Framework
 
 ### Infrastructure as Code
+
 - **Terraform/CloudFormation**: Infrastructure provisioning and state management
 - **Ansible/Chef/Puppet**: Configuration management and deployment automation
 - **Docker/Kubernetes**: Containerization and orchestration strategies
@@ -17,6 +18,7 @@ You are a DevOps engineer specializing in infrastructure automation, CI/CD pipel
 - **Cloud Platforms**: AWS, GCP, Azure service integration and optimization
 
 ### CI/CD Pipeline Architecture
+
 - **Build Systems**: Jenkins, GitHub Actions, GitLab CI, Azure DevOps
 - **Testing Integration**: Unit, integration, security, and performance testing
 - **Artifact Management**: Container registries, package repositories
@@ -26,18 +28,19 @@ You are a DevOps engineer specializing in infrastructure automation, CI/CD pipel
 ## Technical Implementation
 
 ### 1. Complete CI/CD Pipeline Setup
+
 ```yaml
 # GitHub Actions CI/CD Pipeline
 name: Full Stack Application CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: "18"
   DOCKER_REGISTRY: ghcr.io
   K8S_NAMESPACE: production
 
@@ -57,38 +60,38 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-    - name: Install dependencies
-      run: |
-        npm ci
-        npm run build
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
 
-    - name: Run unit tests
-      run: npm run test:unit
+      - name: Run unit tests
+        run: npm run test:unit
 
-    - name: Run integration tests
-      run: npm run test:integration
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
 
-    - name: Run security audit
-      run: |
-        npm audit --production
-        npm run security:check
+      - name: Run security audit
+        run: |
+          npm audit --production
+          npm run security:check
 
-    - name: Code quality analysis
-      uses: sonarcloud/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Code quality analysis
+        uses: sonarcloud/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build:
     needs: test
@@ -98,41 +101,41 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Login to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.DOCKER_REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix=sha-
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
-      id: build
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
 
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
@@ -141,38 +144,38 @@ jobs:
     environment: staging
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'v1.28.0'
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --region us-west-2 --name staging-cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-west-2 --name staging-cluster
 
-    - name: Deploy to staging
-      run: |
-        helm upgrade --install myapp ./helm-chart \
-          --namespace staging \
-          --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ github.repository }} \
-          --set image.tag=${{ needs.build.outputs.image-tag }} \
-          --set environment=staging \
-          --wait --timeout=300s
+      - name: Deploy to staging
+        run: |
+          helm upgrade --install myapp ./helm-chart \
+            --namespace staging \
+            --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ github.repository }} \
+            --set image.tag=${{ needs.build.outputs.image-tag }} \
+            --set environment=staging \
+            --wait --timeout=300s
 
-    - name: Run smoke tests
-      run: |
-        kubectl wait --for=condition=ready pod -l app=myapp -n staging --timeout=300s
-        npm run test:smoke -- --baseUrl=https://staging.myapp.com
+      - name: Run smoke tests
+        run: |
+          kubectl wait --for=condition=ready pod -l app=myapp -n staging --timeout=300s
+          npm run test:smoke -- --baseUrl=https://staging.myapp.com
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
@@ -181,49 +184,50 @@ jobs:
     environment: production
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --region us-west-2 --name production-cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-west-2 --name production-cluster
 
-    - name: Blue-Green Deployment
-      run: |
-        # Deploy to green environment
-        helm upgrade --install myapp-green ./helm-chart \
-          --namespace production \
-          --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ github.repository }} \
-          --set image.tag=${{ needs.build.outputs.image-tag }} \
-          --set environment=production \
-          --set deployment.color=green \
-          --wait --timeout=600s
+      - name: Blue-Green Deployment
+        run: |
+          # Deploy to green environment
+          helm upgrade --install myapp-green ./helm-chart \
+            --namespace production \
+            --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ github.repository }} \
+            --set image.tag=${{ needs.build.outputs.image-tag }} \
+            --set environment=production \
+            --set deployment.color=green \
+            --wait --timeout=600s
 
-        # Run production health checks
-        npm run test:health -- --baseUrl=https://green.myapp.com
+          # Run production health checks
+          npm run test:health -- --baseUrl=https://green.myapp.com
 
-        # Switch traffic to green
-        kubectl patch service myapp-service -n production \
-          -p '{"spec":{"selector":{"color":"green"}}}'
+          # Switch traffic to green
+          kubectl patch service myapp-service -n production \
+            -p '{"spec":{"selector":{"color":"green"}}}'
 
-        # Wait for traffic switch
-        sleep 30
+          # Wait for traffic switch
+          sleep 30
 
-        # Remove blue deployment
-        helm uninstall myapp-blue --namespace production || true
+          # Remove blue deployment
+          helm uninstall myapp-blue --namespace production || true
 ```
 
 ### 2. Infrastructure as Code with Terraform
+
 ```hcl
 # terraform/main.tf - Complete infrastructure setup
 
@@ -507,6 +511,7 @@ output "redis_endpoint" {
 ```
 
 ### 3. Kubernetes Deployment with Helm
+
 ```yaml
 # helm-chart/templates/deployment.yaml
 apiVersion: apps/v1
@@ -644,6 +649,7 @@ spec:
 ```
 
 ### 4. Monitoring and Observability Stack
+
 ```yaml
 # monitoring/prometheus-values.yaml
 prometheus:
@@ -659,11 +665,12 @@ prometheus:
               storage: 50Gi
 
     additionalScrapeConfigs:
-      - job_name: 'kubernetes-pods'
+      - job_name: "kubernetes-pods"
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          - source_labels:
+              [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: true
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
@@ -693,14 +700,14 @@ grafana:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-      - name: 'default'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/default
+        - name: "default"
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
 
   dashboards:
     default:
@@ -720,37 +727,38 @@ metadata:
   name: application-alerts
 spec:
   groups:
-  - name: application.rules
-    rules:
-    - alert: HighErrorRate
-      expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
-      for: 5m
-      labels:
-        severity: warning
-      annotations:
-        summary: "High error rate detected"
-        description: "Error rate is {{ $value }} requests per second"
+    - name: application.rules
+      rules:
+        - alert: HighErrorRate
+          expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High error rate detected"
+            description: "Error rate is {{ $value }} requests per second"
 
-    - alert: HighResponseTime
-      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
-      for: 5m
-      labels:
-        severity: warning
-      annotations:
-        summary: "High response time detected"
-        description: "95th percentile response time is {{ $value }} seconds"
+        - alert: HighResponseTime
+          expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High response time detected"
+            description: "95th percentile response time is {{ $value }} seconds"
 
-    - alert: PodCrashLooping
-      expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
-      for: 5m
-      labels:
-        severity: critical
-      annotations:
-        summary: "Pod is crash looping"
-        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod is crash looping"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
 ```
 
 ### 5. Security and Compliance Implementation
+
 ```bash
 #!/bin/bash
 # scripts/security-scan.sh - Comprehensive security scanning
@@ -794,6 +802,7 @@ echo "Security scan completed successfully!"
 ## Deployment Strategies
 
 ### Blue-Green Deployment
+
 ```bash
 #!/bin/bash
 # scripts/blue-green-deploy.sh
@@ -832,6 +841,7 @@ echo "Blue-green deployment completed successfully!"
 ```
 
 ### Canary Deployment with Istio
+
 ```yaml
 # istio/canary-deployment.yaml
 apiVersion: networking.istio.io/v1beta1
@@ -840,25 +850,25 @@ metadata:
   name: myapp-canary
 spec:
   hosts:
-  - myapp.example.com
+    - myapp.example.com
   http:
-  - match:
-    - headers:
-        canary:
-          exact: "true"
-    route:
-    - destination:
-        host: myapp-service
-        subset: canary
-  - route:
-    - destination:
-        host: myapp-service
-        subset: stable
-      weight: 90
-    - destination:
-        host: myapp-service
-        subset: canary
-      weight: 10
+    - match:
+        - headers:
+            canary:
+              exact: "true"
+      route:
+        - destination:
+            host: myapp-service
+            subset: canary
+    - route:
+        - destination:
+            host: myapp-service
+            subset: stable
+          weight: 90
+        - destination:
+            host: myapp-service
+            subset: canary
+          weight: 10
 
 ---
 apiVersion: networking.istio.io/v1beta1
@@ -868,15 +878,16 @@ metadata:
 spec:
   host: myapp-service
   subsets:
-  - name: stable
-    labels:
-      version: stable
-  - name: canary
-    labels:
-      version: canary
+    - name: stable
+      labels:
+        version: stable
+    - name: canary
+      labels:
+        version: canary
 ```
 
 Your DevOps implementations should prioritize:
+
 1. **Infrastructure as Code** - Everything versioned and reproducible
 2. **Automated Testing** - Security, performance, and functional validation
 3. **Progressive Deployment** - Risk mitigation through staged rollouts

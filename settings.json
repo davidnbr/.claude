@@ -1,13 +1,17 @@
 {
   "respectGitignore": true,
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
-    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
     "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
+    "defaultMode": "default",
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -37,12 +41,11 @@
       "Read(./yarn.lock)",
       "Read(./pnpm-lock.yaml)",
       "Read(./Cargo.lock)"
-    ],
-    "defaultMode": "default"
+    ]
   },
   "statusLine": {
     "type": "command",
-    "command": "node ~/.claude/hud/omc-hud.mjs"
+    "command": "node ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
@@ -54,13 +57,17 @@
     "caveman@caveman": true
   },
   "extraKnownMarketplaces": {
+    "omc": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git"
+      }
+    },
     "caveman": {
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
     }
-  },
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true
+  }
 }

@@ -1,8 +1,10 @@
 # Claude dirs
+.omc*
 backups
 cache
 debug
 file-history
+history*
 hud
 ide
 paste-cache
@@ -11,12 +13,12 @@ plugins
 projects
 sessions
 shell-snapshots
+stats*
 statsig
 tasks
 teams
 telemetry
 todos
-.omc*
 
 # node
 history.jsonl

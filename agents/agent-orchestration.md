@@ -20,6 +20,7 @@ This document defines how agents work as a team, reviewing and validating each o
 | **context-manager**             | Coordinator           | Context preservation, session handoffs                              | opus   |
 | **search-specialist**           | Researcher            | Web research, documentation, trends                                 | haiku  |
 | **mcp-expert**                  | Specialist            | MCP server configurations, integrations                             | sonnet |
+| **hipaa-compliance-reviewer**   | Compliance Gate       | HIPAA Security/Privacy Rule, PHI protection, ePHI audit             | opus   |
 
 ### Lead Role: `principal-software-engineer`
 
@@ -267,6 +268,39 @@ Step 4: HANDOFF (context-manager)
 
 ---
 
+### 8. HIPAA Compliance Review
+
+**Trigger**: New PHI-touching feature, schema change on patient tables, third-party integration in healthcare context, security audit, regulatory review
+
+```
+WORKFLOW: hipaa-compliance
+Step 1: TRIAGE (Lead)
+   └─ Identify scope: models, API endpoints, logging, third-party integrations
+   └─ Classify PHI fields touched by the change
+Step 2: COMPLIANCE REVIEW (hipaa-compliance-reviewer)
+   └─ PHI surface area mapping (all 18 identifiers)
+   └─ Technical safeguards audit: access control, audit logs, encryption, TLS
+   └─ Privacy Rule: minimum necessary, de-identification
+   └─ Third-party BAA check
+   └─ Output: Findings report with severity + rule citations
+   └─ Pass criteria: Zero CRITICAL findings, HIGH findings have remediation plan
+Step 3: REMEDIATION (Lead or appropriate implementer)
+   └─ Fix CRITICAL and HIGH findings
+   └─ Output: Code changes
+Step 4: RE-REVIEW (hipaa-compliance-reviewer)
+   └─ Verify fixes resolve findings
+   └─ If CRITICAL remains → return to Step 3
+Step 5: ARCHITECTURE SIGN-OFF (backend-architect) [if schema/API changed]
+   └─ Confirm fixes don't break service contracts
+Step 6: FINAL REVIEW (code-reviewer)
+   └─ Standard quality gate
+   └─ Output: Approval
+```
+
+**Escalation**: If CRITICAL finding involves PHI already in logs or sent to unauthorized third party → stop, escalate to security team and legal immediately before any code changes.
+
+---
+
 ## Review Gate Criteria
 
 ### Code Reviewer Checklist
@@ -382,6 +416,7 @@ Step 4: HANDOFF (context-manager)
 | Errors/Bugs  | error-detective       | backend-architect, code-reviewer     |
 | Performance  | database-optimization | backend-architect                    |
 | Security     | code-reviewer         | backend-architect                    |
+| HIPAA/PHI    | hipaa-compliance-reviewer | backend-architect, code-reviewer |
 | Integration  | search-specialist     | mcp-expert, code-reviewer            |
 | Research     | search-specialist     | backend-architect                    |
 
