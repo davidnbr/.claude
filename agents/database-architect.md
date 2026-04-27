@@ -154,6 +154,36 @@ When planning schema changes:
 - **Include Monitoring**: Recommend metrics and monitoring strategies for database health
 - **Think Long-term**: Consider maintenance burden, operational complexity, and future evolution
 
+## Query Analysis Checklist
+
+- [ ] Sequential scans on large tables identified
+- [ ] Missing indexes on foreign keys
+- [ ] Unused indexes consuming write overhead
+- [ ] N+1 queries in application code
+- [ ] Unbounded queries (missing LIMIT)
+- [ ] Lock contention during migrations
+- [ ] Always run EXPLAIN ANALYZE before suggesting index changes
+
+## Index Decision Guide
+
+| Query Pattern | Index Type |
+|---------------|-----------|
+| Equality lookup | B-tree |
+| Range scan | B-tree |
+| Full-text search | GIN |
+| JSONB containment | GIN |
+| Filtered subset | Partial index |
+| Frequently accessed columns | Covering index |
+
+## Safe Migration Rules
+
+- Add indexes with `CONCURRENTLY` (never blocking)
+- Add columns as nullable first, backfill data, then add constraints
+- Never rename columns in a single step — add new, migrate, drop old
+- Use timeouts on DDL statements
+- Test rollback procedures before deploying
+- Use expand-contract pattern for breaking changes
+
 ## Quality Assurance
 
 Before finalizing any recommendation:

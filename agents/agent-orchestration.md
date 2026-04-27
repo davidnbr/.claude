@@ -11,15 +11,17 @@ This document defines how agents work as a team, reviewing and validating each o
 | Agent                           | Role                  | Specialty                                                           | Model  |
 | ------------------------------- | --------------------- | ------------------------------------------------------------------- | ------ |
 | **principal-software-engineer** | **Lead/Orchestrator** | Technical leadership, engineering excellence, workflow coordination | sonnet |
-| **backend-architect**           | Architect             | API design, service boundaries, scalability                         | sonnet |
-| **database-architect**          | Architect             | Data modeling, DB selection, CQRS/event sourcing                    | opus   |
+| **architect-reviewer**          | Architect             | System design, distributed systems, service boundaries, scalability | opus   |
+| **backend-architect**           | Architect/Implementer | API design, service boundaries, backend features                    | sonnet |
+| **frontend-engineer**           | Implementer           | UI, components, accessibility, state management                     | sonnet |
+| **database-architect**          | Architect             | Data modeling, DB selection, CQRS/event sourcing                    | sonnet |
 | **devops-engineer**             | Implementer           | CI/CD, infrastructure, deployment                                   | sonnet |
-| **database-optimization**       | Implementer           | Query tuning, indexing, performance                                 | sonnet |
-| **error-detective**             | Investigator          | Log analysis, error patterns, root cause                            | sonnet |
-| **code-reviewer**               | Quality Gate          | Code quality, security, maintainability                             | sonnet |
+| **security-reviewer**           | Security Gate         | OWASP Top 10, IAM, secrets, injection, XSS                         | opus   |
+| **error-detective**             | Investigator          | Log analysis, error patterns, root cause, debugging                 | sonnet |
+| **code-reviewer**               | Quality Gate          | Code quality, security, test coverage, maintainability              | sonnet |
+| **verifier**                    | Validator             | Post-impl validation, test pass confirmation, PASS/FAIL verdict     | haiku  |
 | **context-manager**             | Coordinator           | Context preservation, session handoffs                              | opus   |
 | **search-specialist**           | Researcher            | Web research, documentation, trends                                 | haiku  |
-| **mcp-expert**                  | Specialist            | MCP server configurations, integrations                             | sonnet |
 | **hipaa-compliance-reviewer**   | Compliance Gate       | HIPAA Security/Privacy Rule, PHI protection, ePHI audit             | opus   |
 
 ### Lead Role: `principal-software-engineer`
