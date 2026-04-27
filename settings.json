@@ -7,17 +7,13 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
   },
   "permissions": {
-    "allow": [
-      "Read",
-      "Grep",
-      "Glob",
-      "WebSearch",
-      "WebFetch"
-    ],
+    "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./credentials.json)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
       "Read(./**/*.pem)",
       "Read(./**/*.key)",
       "Read(./**/*.der)",
@@ -46,7 +42,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node /home/davidnbr98/.claude/hud/omc-hud.mjs"
+    "command": "node ~/.claude/hud/omc-hud.mjs"
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
