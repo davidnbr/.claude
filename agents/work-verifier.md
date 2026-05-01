@@ -1,5 +1,5 @@
 ---
-name: verifier
+name: work-verifier
 description: Validates completed work independently. Use after tasks are marked done to confirm implementations are functional, tests pass, and nothing is incomplete.
 tools: Read, Glob, Grep, Bash
 model: haiku

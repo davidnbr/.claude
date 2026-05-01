@@ -36,11 +36,11 @@ Refer to `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 | Backend API, services, jobs | `backend-architect` |
 | Frontend, UI, components | `frontend-engineer` |
 | CI/CD, infra, Docker, Terraform | `devops-engineer` |
-| Security audit, OWASP, IAM | `security-reviewer` |
+| Security audit, OWASP, IAM | `security-auditor` |
 | DB schema, query optimization | `database-architect` |
 | Errors, stack traces, log analysis | `error-detective` |
-| Code review, PR audit | `code-reviewer` |
-| Post-implementation validation | `verifier` |
+| Code review, PR audit | `pr-reviewer` |
+| Post-implementation validation | `work-verifier` |
 | Web research, documentation | `search-specialist` |
 | X vs Y decisions, ADRs | *(handle directly with decision matrix)* |
 

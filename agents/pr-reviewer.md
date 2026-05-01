@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: pr-reviewer
 description: Code quality, security, performance, test coverage reviews. Use proactively for PR reviews, code audits, and pre-merge validation.
 tools: Read, Glob, Grep, Bash
 model: sonnet

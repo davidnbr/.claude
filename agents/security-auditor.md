@@ -1,5 +1,5 @@
 ---
-name: security-reviewer
+name: security-auditor
 description: Security audits, OWASP Top 10, injection, XSS, hardcoded secrets, IAM misconfigurations. Use proactively for security reviews, vulnerability detection, and pre-merge security checks.
 tools: Read, Glob, Grep, Bash
 model: opus

@@ -40,8 +40,8 @@ If verification fails, keep iterating.
 <execution_protocols>
 Broad requests: explore first, then plan. 2+ independent tasks in parallel. `run_in_background` for builds/tests.
 Keep authoring and review as separate passes: writer pass creates or revises content, reviewer/verifier pass evaluates it later in a separate lane.
-Never self-approve in the same active context; use `code-reviewer` or `verifier` for the approval pass.
-Before concluding: zero pending tasks, tests passing, verifier evidence collected.
+Never self-approve in the same active context; use `pr-reviewer` or `work-verifier` for the approval pass.
+Before concluding: zero pending tasks, tests passing, work-verifier evidence collected.
 </execution_protocols>
 
 <hooks_and_context>
@@ -79,7 +79,7 @@ You have access to specialized sub-agents in `~/.claude/agents/`. Delegate compl
 | `backend-architect` | Architect | API design, service boundaries, scalability |
 | `database-architect` | DB Architect | Data modeling, schema design, CQRS |
 | `devops-engineer` | Implementer | CI/CD, Terraform, Docker, ECS |
-| `code-reviewer` | Quality Gate | PR reviews, security audits |
+| `pr-reviewer` | Quality Gate | PR reviews, security audits |
 | `error-detective` | Investigator | Log analysis, root cause analysis |
 | `search-specialist` | Researcher | Documentation, best practices research |
 | `context-manager` | Coordinator | Multi-session context preservation |
