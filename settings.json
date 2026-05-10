@@ -1,7 +1,5 @@
 {
   "respectGitignore": true,
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
@@ -10,8 +8,13 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
-    "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
-    "defaultMode": "default",
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "WebSearch",
+      "WebFetch"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -41,7 +44,8 @@
       "Read(./yarn.lock)",
       "Read(./pnpm-lock.yaml)",
       "Read(./Cargo.lock)"
-    ]
+    ],
+    "defaultMode": "default"
   },
   "statusLine": {
     "type": "command",
@@ -54,7 +58,9 @@
     "oh-my-claudecode@omc": true,
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "context-mode@context-mode": true
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -68,6 +74,26 @@
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
+    },
+    "context-mode": {
+      "source": {
+        "source": "github",
+        "repo": "mksglu/context-mode"
+      }
     }
+  },
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/home/davidnbr98/.claude/hooks/context-mode-cache-heal.mjs\""
+          }
+        ]
+      }
+    ]
   }
 }
