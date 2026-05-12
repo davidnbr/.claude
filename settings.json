@@ -47,6 +47,18 @@
     ],
     "defaultMode": "default"
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/home/davidnbr98/.claude/hooks/context-mode-cache-heal.mjs\""
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "node ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
@@ -60,7 +72,7 @@
     "typescript-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
     "gopls-lsp@claude-plugins-official": true,
-    "context-mode@context-mode": true
+    "context-mode@context-mode": false
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -83,17 +95,5 @@
     }
   },
   "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true,
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/home/davidnbr98/.claude/hooks/context-mode-cache-heal.mjs\""
-          }
-        ]
-      }
-    ]
-  }
+  "skipDangerousModePermissionPrompt": true
 }
