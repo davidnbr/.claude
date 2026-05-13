@@ -8,3 +8,4 @@ credentials*
 .credentials*
 *.pem*
 *.key*
+*.tfvars

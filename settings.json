@@ -8,13 +8,7 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
-    "allow": [
-      "Read",
-      "Grep",
-      "Glob",
-      "WebSearch",
-      "WebFetch"
-    ],
+    "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -43,7 +37,9 @@
       "Read(./package-lock.json)",
       "Read(./yarn.lock)",
       "Read(./pnpm-lock.yaml)",
-      "Read(./Cargo.lock)"
+      "Read(./Cargo.lock)",
+      "Read(./**/*.tfvars)",
+      "Read(./**/*.tfvars.*)"
     ],
     "defaultMode": "default"
   },
