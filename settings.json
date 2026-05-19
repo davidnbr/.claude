@@ -43,19 +43,20 @@
     ],
     "defaultMode": "default"
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "node ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
-    "ralph-loop@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": false,
+    "context7@claude-plugins-official": false,
     "oh-my-claudecode@omc": true,
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -72,5 +73,6 @@
     }
   },
   "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "editorMode": "vim"
 }
