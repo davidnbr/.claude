@@ -8,7 +8,13 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
-    "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "WebSearch",
+      "WebFetch"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -37,20 +43,17 @@
       "Read(./package-lock.json)",
       "Read(./yarn.lock)",
       "Read(./pnpm-lock.yaml)",
-      "Read(./Cargo.lock)",
-      "Read(./**/*.tfvars)",
-      "Read(./**/*.tfvars.*)"
+      "Read(./Cargo.lock)"
     ],
     "defaultMode": "default"
   },
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "rtk hook claude"
+            "command": "\"/home/davidnbr98/.claude/hooks/context-mode-cache-heal.mjs\""
           }
         ]
       }
@@ -58,17 +61,18 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud-cache.sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
+    "command": "node ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
-    "ralph-loop@claude-plugins-official": false,
-    "context7@claude-plugins-official": false,
+    "ralph-loop@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
     "oh-my-claudecode@omc": true,
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "context-mode@context-mode": false
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -82,11 +86,13 @@
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
+    },
+    "context-mode": {
+      "source": {
+        "source": "github",
+        "repo": "mksglu/context-mode"
+      }
     }
   },
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true,
-  "skipWorkflowUsageWarning": true,
-  "theme": "dark",
-  "editorMode": "vim"
+  "skipDangerousModePermissionPrompt": true
 }

@@ -155,3 +155,5 @@ Rules that are NEVER optional:
 - **Cloud**: AWS (prefer AWSCC provider for Terraform)
 - **Monitoring**: Datadog, CloudWatch, Prometheus/Grafana
 - **Security scanning**: Checkov, Trivy, Snyk
+
+@RTK.md
