@@ -22,6 +22,8 @@ todos
 remote-settings.json
 .last-cleanup
 .last-update-result.json
+daemon*
+jobs
 
 # node
 history.jsonl
