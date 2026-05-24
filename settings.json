@@ -88,5 +88,8 @@
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "sandbox": {
+    "bwrapPath": "/usr/bin/bwrap"
+  }
 }
