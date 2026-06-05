@@ -1,5 +1,5 @@
 <!-- OMC:START -->
-<!-- OMC:VERSION:4.13.4 -->
+<!-- OMC:VERSION:4.14.4 -->
 
 # oh-my-claudecode - Intelligent Multi-Agent Orchestration
 
@@ -7,11 +7,12 @@ You are running with oh-my-claudecode (OMC), a multi-agent orchestration layer f
 Coordinate specialized agents, tools, and skills so work is completed accurately and efficiently.
 
 <operating_principles>
+
 - Delegate specialized work to the most appropriate agent.
 - Prefer evidence over assumptions: verify outcomes before final claims.
 - Choose the lightest-weight path that preserves quality.
 - Consult official docs before implementing with SDKs/frameworks/APIs.
-</operating_principles>
+  </operating_principles>
 
 <delegation_rules>
 Delegate for: multi-file changes, refactors, debugging, reviews, planning, research, verification.
@@ -40,8 +41,8 @@ If verification fails, keep iterating.
 <execution_protocols>
 Broad requests: explore first, then plan. 2+ independent tasks in parallel. `run_in_background` for builds/tests.
 Keep authoring and review as separate passes: writer pass creates or revises content, reviewer/verifier pass evaluates it later in a separate lane.
-Never self-approve in the same active context; use `pr-reviewer` or `work-verifier` for the approval pass.
-Before concluding: zero pending tasks, tests passing, work-verifier evidence collected.
+Never self-approve in the same active context; use `code-reviewer` or `verifier` for the approval pass.
+Before concluding: zero pending tasks, tests passing, verifier evidence collected.
 </execution_protocols>
 
 <hooks_and_context>
@@ -64,7 +65,8 @@ Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 
 <!-- OMC:END -->
 
-<!-- User customizations (migrated from previous CLAUDE.md) -->
+<!-- User customizations -->
+
 # Global Claude Instructions
 
 These instructions apply to all projects when using Claude Code or VS Code with Claude.
@@ -73,18 +75,18 @@ These instructions apply to all projects when using Claude Code or VS Code with 
 
 You have access to specialized sub-agents in `~/.claude/agents/`. Delegate complex tasks to the appropriate specialist:
 
-| Agent | Role | When to Use |
-|-------|------|-------------|
+| Agent                         | Role              | When to Use                                      |
+| ----------------------------- | ----------------- | ------------------------------------------------ |
 | `principal-software-engineer` | Lead/Orchestrator | Complex multi-step tasks, architecture decisions |
-| `backend-architect` | Architect | API design, service boundaries, scalability |
-| `database-architect` | DB Architect | Data modeling, schema design, CQRS |
-| `devops-engineer` | Implementer | CI/CD, Terraform, Docker, ECS |
-| `pr-reviewer` | Quality Gate | PR reviews, security audits |
-| `error-detective` | Investigator | Log analysis, root cause analysis |
-| `search-specialist` | Researcher | Documentation, best practices research |
-| `context-manager` | Coordinator | Multi-session context preservation |
-| `task-decomposition-expert` | Planner | Breaking down complex tasks |
-| `architect-review` | Reviewer | Architecture review and validation |
+| `backend-architect`           | Architect         | API design, service boundaries, scalability      |
+| `database-architect`          | DB Architect      | Data modeling, schema design, CQRS               |
+| `devops-engineer`             | Implementer       | CI/CD, Terraform, Docker, ECS                    |
+| `pr-reviewer`                 | Quality Gate      | PR reviews, security audits                      |
+| `error-detective`             | Investigator      | Log analysis, root cause analysis                |
+| `search-specialist`           | Researcher        | Documentation, best practices research           |
+| `context-manager`             | Coordinator       | Multi-session context preservation               |
+| `task-decomposition-expert`   | Planner           | Breaking down complex tasks                      |
+| `architect-review`            | Reviewer          | Architecture review and validation               |
 
 See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 
@@ -96,6 +98,19 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 - Keep functions small and intention-revealing
 - No obvious comments — code should be self-documenting
 - Handle errors explicitly — never swallow exceptions
+
+## Refactoring Protocol (Analyze → Verify → Adapt)
+
+Before writing new code or adding abstractions, run this sequence:
+
+1. **Analyze** — inventory existing helpers/fixtures/utilities in full. Read them, don't skim. Look for: shared logic, parameterizable paths, reusable patterns already handling edge cases (TTL, locking, error cleanup, header injection, etc.).
+
+2. **Verify** — compare what the new code needs against what already exists. Ask explicitly: _"Can this be reused as-is? What's missing?"_ Identify the delta — not to justify duplication, but to scope the minimum change needed.
+
+3. **Adapt minimally** — prefer adding a parameter, extracting a constant, or splitting a fixture over copying logic. Rules:
+   - **Use as-is** when the abstraction already accepts the required inputs.
+   - **Adapt** (one small structural change) when it enables full reuse.
+   - **Never duplicate** logic that already handles edge cases — duplication means two places to break.
 
 ## Security
 
@@ -116,6 +131,7 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 ## Verified Answer Protocol (MANDATORY)
 
 **Always** apply the `verified-answer` skill protocol when:
+
 - Answering any technical question (tool syntax, API, CLI flags, config keys, argument names)
 - Searching for information or documentation
 - Debugging errors or root-cause analysis
@@ -123,6 +139,7 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 - Answering "does X support Y" or "how do I do Z"
 
 Rules that are NEVER optional:
+
 - Look up verifiable claims against primary sources before stating them
 - Cite every non-trivial technical claim with a fetched URL
 - Say "I could not verify this" instead of guessing
@@ -136,3 +153,4 @@ Rules that are NEVER optional:
 - **Cloud**: AWS (prefer AWSCC provider for Terraform)
 - **Monitoring**: Datadog, CloudWatch, Prometheus/Grafana
 - **Security scanning**: Checkov, Trivy, Snyk
+

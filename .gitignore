@@ -19,6 +19,9 @@ tasks
 teams
 telemetry
 todos
+remote-settings.json
+.last-cleanup
+.last-update-result.json
 
 # node
 history.jsonl
