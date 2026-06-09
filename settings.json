@@ -56,6 +56,39 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "reporag",
+            "tool": "index_codebase",
+            "input": {
+              "path": "${cwd}"
+            }
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/davidnbr98/.claude/hooks/reporag-hint.py"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/davidnbr98/.claude/hooks/reporag-hint.py"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -86,12 +119,20 @@
       }
     }
   },
+  "sandbox": {
+    "enabled": true,
+    "filesystem": {
+      "allowWrite": ["~/nc", "~/nd"]
+    },
+    "network": {
+      "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
+    },
+    "bwrapPath": "/usr/bin/bwrap"
+  },
   "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "editorMode": "vim",
-  "sandbox": {
-    "bwrapPath": "/usr/bin/bwrap"
-  }
+  "agentPushNotifEnabled": true
 }
