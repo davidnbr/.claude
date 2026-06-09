@@ -93,6 +93,8 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 ## Code Quality Standards
 
 - Follow SOLID principles pragmatically — simplicity over purity
+- Adhere to Clean Code principles
+- Enforce YAGNI, KISS, DRY
 - Write tests alongside implementation
 - Use guard clauses and early returns
 - Keep functions small and intention-revealing
@@ -153,4 +155,3 @@ Rules that are NEVER optional:
 - **Cloud**: AWS (prefer AWSCC provider for Terraform)
 - **Monitoring**: Datadog, CloudWatch, Prometheus/Grafana
 - **Security scanning**: Checkov, Trivy, Snyk
-
