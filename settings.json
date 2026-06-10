@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/davidnbr98/.claude/hooks/reporag-hint.py"
+            "command": "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/reporag-hint.py"
           }
         ]
       }
@@ -127,4 +127,3 @@
   "editorMode": "vim",
   "agentPushNotifEnabled": true
 }
-
