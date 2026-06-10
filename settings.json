@@ -8,13 +8,7 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
-    "allow": [
-      "Read",
-      "Grep",
-      "Glob",
-      "WebSearch",
-      "WebFetch"
-    ],
+    "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -119,15 +113,10 @@
   "sandbox": {
     "enabled": true,
     "filesystem": {
-      "allowWrite": [
-        "~/nc",
-        "~/nd"
-      ]
+      "allowWrite": ["~/nc", "~/nd"]
     },
     "network": {
-      "allowUnixSockets": [
-        "/nix/var/nix/daemon-socket/socket"
-      ]
+      "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
     },
     "bwrapPath": "/usr/bin/bwrap"
   },
@@ -138,3 +127,4 @@
   "editorMode": "vim",
   "agentPushNotifEnabled": true
 }
+

@@ -1,5 +1,5 @@
 <!-- OMC:START -->
-<!-- OMC:VERSION:4.14.5 -->
+<!-- OMC:VERSION:4.14.6 -->
 
 # oh-my-claudecode - Intelligent Multi-Agent Orchestration
 
@@ -157,3 +157,4 @@ Rules that are NEVER optional:
 - **Security scanning**: Checkov, Trivy, Snyk
 
 @RTK.md
+
