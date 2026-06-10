@@ -38,7 +38,7 @@
       "command": "/home/davidnbr98/.local/bin/reporag-mcp",
       "args": [],
       "timeout": 600000,
-      "env": { "REPORAG_DATA_DIR": "~/.local/share/reporag" }
+      "env": { "REPORAG_DATA_DIR": "${HOME}/.local/share/reporag" }
     }
   }
 }

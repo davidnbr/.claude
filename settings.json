@@ -82,15 +82,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /home/davidnbr98/.claude/hooks/reporag-hint.py"
-          }
-        ]
-      },
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
             "command": "/home/davidnbr98/.claude/hooks/reporag-hint.py"
           }
         ]
