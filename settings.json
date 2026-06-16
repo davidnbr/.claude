@@ -5,7 +5,8 @@
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+    "OMC_DISABLE_TOOLS": "wiki,memory"
   },
   "permissions": {
     "allow": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
@@ -45,7 +46,19 @@
     ],
     "defaultMode": "default"
   },
+  "model": "sonnet",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/strip-omc-memory-hooks.mjs\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -53,6 +66,15 @@
           {
             "type": "command",
             "command": "rtk hook claude"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/reporag-dupcheck.py"
           }
         ]
       }
@@ -112,11 +134,11 @@
   },
   "sandbox": {
     "enabled": true,
-    "filesystem": {
-      "allowWrite": ["~/nc", "~/nd"]
-    },
     "network": {
       "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
+    },
+    "filesystem": {
+      "allowWrite": ["~/nc", "~/nd"]
     },
     "bwrapPath": "/usr/bin/bwrap"
   },
