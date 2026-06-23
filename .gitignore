@@ -9,6 +9,7 @@ hud
 ide
 paste-cache
 plans
+policy-limits.json
 plugins
 projects
 sessions
@@ -25,13 +26,16 @@ remote-settings.json
 daemon*
 jobs
 
+# Skills dirs
+hooks/reporag-*
+.caveman-*
+
 # node
 history.jsonl
 .credentials*
 *.backup.*
 *-cache.json
 .session-stats.json
-.caveman-*
 
 # keys
 *.pem*
