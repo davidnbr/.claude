@@ -102,7 +102,54 @@
       "Read(./pnpm-lock.yaml)",
       "Read(./Cargo.lock)",
       "Read(./**/*.tfvars)",
-      "Read(./**/*.tfvars.*)"
+      "Read(./**/*.tfvars.*)",
+
+      "Read(/proc/**)",
+      "Read(./**/.netrc)",
+      "Read(~/.netrc)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.npmrc)",
+      "Read(~/.pypirc)",
+      "Read(~/.git-credentials)",
+
+      "Bash(env)",
+      "Bash(env|*)",
+      "Bash(printenv)",
+      "Bash(printenv:*)",
+      "Bash(export -p)",
+      "Bash(export -p|*)",
+      "Bash(declare -x)",
+      "Bash(declare -x|*)",
+      "Bash(declare -p)",
+      "Bash(declare -p|*)",
+      "Bash(set)",
+      "Bash(compgen -v:*)",
+      "Bash(cat /proc/*/environ)",
+      "Bash(cat /proc/*/environ:*)",
+      "Bash(*/proc/*/environ*)",
+      "Bash(*$AWS_SECRET*)",
+      "Bash(*$AWS_ACCESS_KEY*)",
+      "Bash(*$GITHUB_TOKEN*)",
+      "Bash(*$OPENAI_API_KEY*)",
+      "Bash(*$ANTHROPIC_API_KEY*)",
+
+      "Read(../**)",
+      "Read(/etc/**)",
+      "Read(/root/**)",
+      "Edit(../**)",
+      "Edit(/etc/**)",
+      "Edit(/root/**)",
+      "Edit(/usr/**)",
+      "Edit(/bin/**)",
+      "Write(../**)",
+      "Write(/etc/**)",
+      "Write(/root/**)",
+      "Write(/usr/**)",
+      "Write(/bin/**)",
+      "Write(~/.bashrc)",
+      "Write(~/.bash_profile)",
+      "Write(~/.profile)",
+      "Write(~/.zshrc)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -128,7 +175,22 @@
       "Bash(git branch -D*)",
       "Bash(git -C * branch -D*)",
       "Bash(git checkout -- *)",
-      "Bash(git -C * checkout -- *)"
+      "Bash(git -C * checkout -- *)",
+
+      "Bash(echo $*)",
+      "Bash(printf *$*)",
+      "Bash(cat ~/.aws/*)",
+      "Bash(cat ~/.ssh/*)",
+      "Bash(cat ~/.netrc)",
+      "Bash(cat /etc/*)",
+      "Bash(cd /*)",
+      "Bash(cd ~/*)",
+      "Bash(cd ..*)",
+      "Bash(rm /*)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(mv * /*)",
+      "Bash(cp * /*)"
     ],
     "defaultMode": "default"
   },
@@ -152,6 +214,10 @@
           {
             "type": "command",
             "command": "rtk hook claude"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/block-secret-leak.py"
           }
         ]
       },
@@ -225,7 +291,8 @@
       "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
     },
     "filesystem": {
-      "allowWrite": ["~/nc", "~/nd"]
+      "allowWrite": ["~/nc", "~/nd"],
+      "allowRead": ["./.git", "./.devenv"]
     },
     "bwrapPath": "/usr/bin/bwrap"
   },

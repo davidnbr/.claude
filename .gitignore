@@ -13,6 +13,7 @@ policy-limits.json
 plugins
 projects
 sessions
+settings.json.bak
 shell-snapshots
 stats*
 statsig
