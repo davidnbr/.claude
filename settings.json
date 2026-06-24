@@ -13,6 +13,7 @@
       "Read(./.env.example)",
       "Read(./credentials.example.json)",
       "Read(./secrets.example.json)",
+      "Read(./.dev.vars.example)",
       "Read",
       "Grep",
       "Glob",
@@ -67,7 +68,12 @@
       "Read(./**/secrets.backup.json)",
       "Read(./**/credentials.json)",
       "Read(./**/.dev.vars)",
-      "Read(./**/.dev.vars.*)",
+      "Read(./**/.dev.vars.production)",
+      "Read(./**/.dev.vars.staging)",
+      "Read(./**/.dev.vars.development)",
+      "Read(./**/.dev.vars.dev)",
+      "Read(./**/.dev.vars.test)",
+      "Read(./**/.dev.vars.backup)",
       "Read(./**/*.pem)",
       "Read(./**/*.key)",
       "Read(./**/*.der)",
@@ -224,5 +230,9 @@
   "theme": "dark",
   "editorMode": "vim",
   "agentPushNotifEnabled": true,
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
