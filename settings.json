@@ -8,6 +8,10 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
     "OMC_DISABLE_TOOLS": "wiki,memory"
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Read(./.env.example)",
@@ -186,6 +190,7 @@
       }
     ]
   },
+  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
     "command": "sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud-cache.sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
@@ -224,15 +229,14 @@
     },
     "bwrapPath": "/usr/bin/bwrap"
   },
+  "syntaxHighlightingDisabled": false,
   "effortLevel": "medium",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "editorMode": "vim",
-  "agentPushNotifEnabled": true,
-  "tui": "fullscreen",
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  }
+  "preferredNotifChannel": "terminal_bell",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
 }
