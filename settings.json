@@ -63,7 +63,6 @@
       "Read(./dist/**)",
       "Read(./out/**)",
       "Read(./vendor/**)",
-      "Read(./.git/**)",
       "Read(./coverage/**)",
       "Read(./secrets/**)",
       "Read(/proc/**)",
@@ -250,7 +249,7 @@
     },
     "filesystem": {
       "allowWrite": ["~/nc", "~/nd"],
-      "allowRead": ["./.git"]
+      "denyWrite": ["./.git"]
     },
     "bwrapPath": "/usr/bin/bwrap"
   },
@@ -265,4 +264,3 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true
 }
-
