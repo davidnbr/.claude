@@ -107,7 +107,13 @@
       "Write(~/.bashrc)",
       "Write(~/.bash_profile)",
       "Write(~/.profile)",
-      "Write(~/.zshrc)"
+      "Write(~/.zshrc)",
+      "Read(~/.claude/.omc-config.json)",
+      "Read(/home/dbecerra/.claude/.omc-config.json)",
+      "Edit(~/.claude/.omc-config.json)",
+      "Write(~/.claude/.omc-config.json)",
+      "Bash(*omc-config.json*)",
+      "Bash(*.omc-config*)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -140,18 +146,15 @@
       "Bash(cat ~/.ssh/*)",
       "Bash(cat ~/.netrc)",
       "Bash(cat /etc/*)",
-      "Bash(cd /*)",
       "Bash(cd ~/*)",
       "Bash(cd ..*)",
       "Bash(rm /*)",
       "Bash(rm -rf /*)",
-      "Bash(rm -rf ~/*)",
-      "Bash(mv * /*)",
-      "Bash(cp * /*)"
+      "Bash(rm -rf ~/*)"
     ],
     "defaultMode": "default"
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -211,6 +214,26 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/slack-notify.sh \"✅ Finished\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/slack-notify.sh \"🔔 Action needed\""
+          }
+        ]
+      }
     ]
   },
   "workflowKeywordTriggerEnabled": false,
@@ -226,7 +249,8 @@
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "atlassian@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -251,12 +275,13 @@
       "allowWrite": ["~/nc", "~/nd"],
       "denyWrite": ["./.git"]
     },
-    "bwrapPath": "/usr/bin/bwrap"
+    "bwrapPath": "/usr/bin/bwrap",
+    "allowUnsandboxedCommands": false
   },
   "syntaxHighlightingDisabled": false,
   "effortLevel": "medium",
   "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
+  "skipDangerousModePermissionPrompt": false,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "editorMode": "vim",
