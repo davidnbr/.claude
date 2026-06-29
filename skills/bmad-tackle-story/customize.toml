@@ -1,0 +1,31 @@
+# Customization surface for bmad-tackle-story.
+# Plain config read directly by the skill (no BMAD resolver needed).
+# Edit values here to tune the loop without touching SKILL.md.
+
+[loop]
+# Max dev→review→resolve iterations per story before STOP + report stall.
+max_iter = 5
+
+# Process stories strictly in dependency order (true) or allow parallel
+# loops for stories the plan confirms independent (false).
+sequential = true
+
+# Skip Step 1 plan verification (NOT recommended). When true, enter the
+# loop directly — only for trivial stories with an already-verified plan.
+skip_plan_verification = false
+
+[models]
+# Model pinned per lane (Agent tool `model` param). sonnet = Sonnet 4.6, opus = Opus 4.8.
+plan_verify = "opus"
+code        = "sonnet"
+review      = "opus"
+resolve     = "opus"
+
+[validation]
+# Validation chain each coder/resolver subagent must run and report verbatim.
+# Override for non-Terraform stacks.
+chain = ["terraform fmt -recursive", "tflint -f compact", "checkov --config-file ../../.checkov.yml", "terraform validate"]
+
+[scope]
+# Outward-facing actions the orchestrator must NOT do without explicit user ask.
+never_without_ask = ["git commit", "git push", "open PR", "terraform apply"]
