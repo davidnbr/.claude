@@ -11,11 +11,25 @@ description: 'Verify, address, and reply to PR/code-review findings from a senio
 
 ## Core Principles (never skip)
 
-1. **Verify, don't assume.** Every factual claim in a finding — and every claim in your response — is checked against an authoritative source before you act. Project rules (`.claude/rules/*.md`, `CLAUDE.md`), the actual code, and vendor docs (Microsoft Learn / Terraform Registry / provider docs via MCP or WebFetch). Reconstructed-from-memory facts are not allowed.
+1. **Verify, don't assume.** Every factual claim in a finding — and every claim in your response — is checked against an authoritative source before you act. The loaded rule set (see below), the actual code, and vendor docs (Microsoft Learn / Terraform Registry / provider docs via MCP or WebFetch). Reconstructed-from-memory facts are not allowed.
 2. **A finding can be wrong.** Reviewers make mistakes. If the finding's premise is false, the correct action is a respectful rebuttal with a cited source — not a code change. Do not "fix" things that aren't broken (YAGNI).
 3. **Smallest correct change.** When a finding is valid, make the minimal edit that resolves it. No drive-by refactors, no new abstractions.
 4. **Evidence over opinion.** Both fixes and rebuttals reference something concrete: a rule line, a doc URL, a sibling resource, a provider default.
 5. **Loop until done.** Do not stop at "most" findings. Every finding ends in one of: `fixed`, `rebutted`, or `deferred (with explicit user sign-off)`.
+
+## Load rules (worktree/sandbox-safe)
+
+Before verifying findings, load the project's engineering rules from **absolute paths** — you may be in a git **worktree** (cwd ≠ main checkout) under a **sandbox** (reads succeed anywhere; only writes are scoped). Relative paths like `.claude/rules/*.md` silently resolve to the worktree copy, which is often empty/missing. Read whatever exists (absent ≠ ignore):
+
+1. **Global** — `~/.claude/CLAUDE.md` and `~/.claude/rules/*.md`.
+2. **Project, from the real repo root:**
+   ```sh
+   root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+   # if present: "$root/CLAUDE.md", "$root/AGENTS.md", "$root"/.claude/rules/*.md, "$root"/_bmad/custom/*.toml
+   ```
+   `_bmad/custom/*.toml` (`persistent_facts`) holds BMAD engineering guardrails (comment style, naming, "no PM references in shipped code/docs", commit/PR conventions) — read it if present; some projects don't have it. Often gitignored → absent in the worktree → reachable only via `$root`.
+
+Call this union **the loaded rule set**; verify findings, fixes, and rebuttals against it.
 
 ## Inputs
 
@@ -38,7 +52,7 @@ If the source is ambiguous, ask once: "Which PR / which findings?"
 ### Step 2 — Verify each finding (the heart of this skill)
 For each finding, independently and in parallel where possible:
 - Read the cited code at `path:line`.
-- Check the relevant project rule (`.claude/rules/`, `CLAUDE.md`) — does it support or contradict the finding?
+- Check the relevant project rule (the loaded rule set — incl. `_bmad/custom/*.toml` if present) — does it support or contradict the finding?
 - Check the authoritative vendor source for any technical claim (e.g. "AKS modifies the subnet NSG", "this default is X"). Use Microsoft Learn / Terraform Registry MCP tools or WebFetch. **Cite the URL you actually fetched.**
 - Classify: **VALID** (premise holds), **INVALID** (premise false), or **PARTIAL** (real concern, wrong fix).
 
@@ -50,7 +64,7 @@ Produce a verdict table before touching code:
 ### Step 3 — Address valid findings
 - Apply the smallest correct change for each VALID / PARTIAL finding.
 - If dev context exists, defer to `/bmad-dev-story` conventions (task mapping, File List, Change Log). For a pure review-fix outside a story, a direct minimal edit is fine.
-- Run the project validation chain after edits (for this repo: `terraform fmt` → `tflint` → `checkov`; see `CLAUDE.md`). Report pre-existing failures separately from anything you introduced — never claim a fix passed checks it didn't run.
+- Run the project validation chain after edits — the **stack-appropriate** chain (Terraform: `terraform fmt` → `tflint` → `checkov`; Helm/ArgoCD manifests: `yamllint` → `helm lint` → `kubeconform` → `checkov`; etc.), as evidenced by the repo's CI (`.github/workflows/*`), pre-commit config, and the loaded rule set. Do not run Terraform commands on a non-Terraform change. Report pre-existing failures separately from anything you introduced — never claim a fix passed checks it didn't run.
 
 ### Step 4 — Draft replies (concise, human)
 One reply per finding. Tone = a busy senior engineer, not a bot:
@@ -71,7 +85,7 @@ Verify threading with a follow-up `--jq '.[] | {id, in_reply_to_id, user}'`.
 
 ### Step 6 — Commit
 - Only when the user says "commit" (don't push unless asked).
-- Branch convention: `CEP-XXX-...`; commit message `[CEP-XXX] <short description>` (see `CLAUDE.md`). Reference the PR in the body.
+- Branch convention: `CEP-XXX-...`; commit message `[CEP-XXX] <short description>` (per the loaded rule set — commit/PR conventions often live in `_bmad/custom/*.toml`). Reference the PR in the body.
 - Add `Co-Authored-By: Claude <noreply@anthropic.com>`.
 - If on `main`, branch first.
 

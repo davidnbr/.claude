@@ -11,7 +11,7 @@ description: 'Tackle an existing BMAD story (or story range like aks-1-3..aks-1-
 
 ## Non-Negotiable Principles
 
-1. **DO NOT ASSUME ANYTHING. VERIFY COMPLETELY.** Every plan claim, every review finding, every "done" — checked against authoritative sources (project `.claude/rules/*.md`, `CLAUDE.md`, the actual code, vendor docs via MCP/WebFetch) before you act on it. Reconstructed-from-memory facts are forbidden.
+1. **DO NOT ASSUME ANYTHING. VERIFY COMPLETELY.** Every plan claim, every review finding, every "done" — checked against authoritative sources (the loaded rule set from Step 0b, the actual code, vendor docs via MCP/WebFetch) before you act on it. Reconstructed-from-memory facts are forbidden.
 2. **DRY, KISS, YAGNI.** Smallest correct change. No speculative resources, variables, or abstractions. Senior-engineer judgment on patterns for this architecture/infra/stack.
 3. **Author and review are separate lanes.** The coder subagent never approves its own work. Review always runs in a fresh subagent.
 4. **The loop ends on evidence, not vibes.** Done = a clean review pass with zero actionable findings, confirmed by the validation chain. Not "significant progress."
@@ -28,6 +28,22 @@ description: 'Tackle an existing BMAD story (or story range like aks-1-3..aks-1-
 
 Read `customize.toml` (skill root) before anything else. It pins the knobs the rest of this workflow references: `[loop].max_iter`, `[loop].sequential`, `[loop].skip_plan_verification`, the `[models]` map, the `[validation].chain`, and `[scope].never_without_ask`. Values below that say "default 5" etc. are the toml's shipped defaults — the loaded file wins. If the file is missing, fall back to the documented defaults.
 
+### Step 0b — Load rules (authoritative, sandbox-safe)
+
+Load the project's engineering rules **now**, before scoping — and load them from **absolute paths**, because you may be running in a git **worktree** (cwd is the worktree, not the main checkout) under a **sandbox** (reads succeed anywhere, only writes are scoped). Relative paths like `.claude/rules/*.md` silently resolve to the *worktree* copy, which is usually empty or missing — that is a known failure mode. Read all sources that exist; missing ones are fine, absent ≠ ignore:
+
+1. **Global user rules** — `~/.claude/CLAUDE.md` and every `~/.claude/rules/*.md`. Cross-project rules.
+2. **Project rules from the real repo root** (survives worktrees — do NOT use a relative path):
+   ```sh
+   root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+   # Read, if present: "$root/CLAUDE.md", "$root/AGENTS.md",
+   #   "$root"/.claude/rules/*.md, and "$root"/_bmad/custom/*.toml
+   ```
+   If present, `_bmad/custom/*.toml` (`persistent_facts`) is where BMAD projects keep engineering guardrails (comment style, naming, "no PM references in shipped code/docs", commit/PR conventions) — read it. Some projects don't have it; that's fine, just skip. It is often **gitignored** → absent in the worktree → reachable only via `$root` from the main checkout. If it is gitignored, note that to the user (it won't reach fresh clones on other machines).
+3. **The validation chain** — `[validation].chain` from `customize.toml`, **adapted to the story's actual stack**. The shipped default is Terraform; if the story targets a different stack (Helm/Kustomize/ArgoCD manifests, app code, …), use that stack's real chain (e.g. `yamllint` → `helm lint` → `kubeconform` → `checkov`) as evidenced by the repo's CI (`.github/workflows/*`), pre-commit config, and devenv/scripts. Do not run Terraform commands on a non-Terraform story.
+
+Call the union of 1+2 **the loaded rule set**. Pass it (paths + the substance) to every subagent you spawn (plan-verify, coder, reviewer, resolver) — they run in the same worktree/sandbox and must honor the same rules. Verify findings and "done" against it.
+
 ### Step 0 — Locate & confirm scope
 
 1. Resolve the story id(s) to actual spec files. For a range, expand it to the explicit ordered list of stories.
@@ -38,7 +54,7 @@ Read `customize.toml` (skill root) before anything else. It pins the knobs the r
 
 Before any implementation, verify the plan is sound. Spawn a **read-only architect/plan-verification subagent** (model: `opus`):
 
-- Prompt it to: read the story spec(s) + referenced architecture, check the plan against project rules (`.claude/rules/terraform-azure.md`, `CLAUDE.md`) and vendor docs, and flag **creation-time ordering, sequencing, dependency, and destroy/replace risks**. It must VERIFY claims, not assume.
+- Prompt it to: read the story spec(s) + referenced architecture, check the plan against **the loaded rule set** (Step 0b — pass it the absolute paths) and vendor docs, and flag **creation-time ordering, sequencing, dependency, and destroy/replace risks**. It must VERIFY claims, not assume.
 - It returns a structured verdict: `plan_sound: true|false`, ordered risks, and any prerequisite corrections.
 
 **If `plan_sound: false`** or it surfaces a destroy/replace or sequencing flaw → STOP, report to the user with the evidence, and wait. Do not enter the loop on a broken plan.
@@ -61,7 +77,7 @@ loop:
 #### (a) Coder subagent — `model: sonnet`
 Spawn via the Agent tool. Instruct it to invoke the `bmad-dev-story` skill on the target story and **only** that story. It must:
 - Implement to satisfy ALL acceptance criteria + tasks/subtasks for the story.
-- Run the project validation chain (`terraform fmt` → `tflint` → `checkov` → `terraform validate`/`plan` as applicable per `CLAUDE.md`) and report results verbatim.
+- Run the project validation chain (Step 0b item 3 — the stack-appropriate chain, NOT Terraform commands unless the story is Terraform) and report results verbatim.
 - Update only the allowed story-file sections (Tasks checkboxes, Dev Agent Record, File List, Change Log, Status).
 - Return: files changed, validation output, and any HALT condition. NOT self-approve.
 
@@ -106,6 +122,6 @@ Use the Agent tool's `model` parameter to pin each lane. `sonnet` = Sonnet 4.6, 
 ## Spawning Notes
 
 - Spawn subagents with the Agent tool. Each subagent invokes its BMAD skill via the Skill tool inside its own context.
-- Pass the subagent: the resolved story file path(s), the project rules to honor, and the explicit "VERIFY, don't assume / DRY-KISS-YAGNI" directive.
+- Pass the subagent: the resolved story file path(s), **the loaded rule set** (absolute paths from Step 0b, plus the substance of any `_bmad/custom/*.toml` guardrails), and the explicit "VERIFY, don't assume / DRY-KISS-YAGNI" directive.
 - Coder and reviewer are **sequential within a story** (review needs the diff). Across independent stories with no dependency you MAY run loops in parallel — but only if the plan confirms independence; default to sequential in dependency order.
 - Relay only the substance of each subagent's return to the user — not raw context dumps.
