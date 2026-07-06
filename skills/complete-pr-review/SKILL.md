@@ -10,6 +10,7 @@ description: >
   ends with an adversarial-review gate (bmad-code-review if available, else
   adversarial-review). Use when the user asks for a "complete PR review", a
   review "iteration", or a deep/grounded senior review of a branch or diff.
+allowed-tools: 'Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr checks:*)'
 ---
 
 # Complete PR Review
@@ -33,13 +34,16 @@ Core rules (non-negotiable):
   patterns and callers. Use `context7-docs` / `Ref` / `microsoft-learn` /
   `WebFetch` against primary sources for any version-specific stack claim.
   Pin every stack claim to the exact version in `requirements*.txt` /
-  `package.json` / lockfiles.
+  `package.json` / lockfiles. **If an MCP server is unavailable** (headless
+  session, other machine), fall back to Grep/Glob/Read for pattern discovery
+  and WebFetch for docs — and mark in the report which claims had weaker
+  grounding rather than silently skipping the check.
 - **DRY / KISS / YAGNI.** If logic is duplicated 2+ times, recommend abstracting
   it for maintainability. If a function/export/branch is created but unused,
   recommend removing it. Prefer the simplest correct design; flag cleverness
   that isn't paying rent.
 - **Author vs. review separation.** This skill only reviews. Do not fix inline;
-  report findings. (Fixes are a separate pass.)
+  report findings. (Fixes are a separate pass — e.g. `/bmad-resolve-review`.)
 
 ## Inputs
 
@@ -63,26 +67,20 @@ Core rules (non-negotiable):
 
 - `reporag find_existing(task=...)` before judging any "new" helper — surface
   existing functions/patterns it should have reused. Duplication of an existing
-  abstraction is a finding.
+  abstraction is a finding. (No reporag → Grep for similar names/signatures.)
 - `reporag get_architecture` / `ask_project` to confirm the change sits in the
-  right layer for the repo's own architecture. Read the project's rules for the
-  intended layering and conventions — from **absolute paths**, since you may be
-  in a git **worktree** (cwd ≠ main checkout) under a sandbox; relative paths
-  resolve to the worktree copy, which is often empty/missing:
-  ```sh
-  root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
-  # if present: "$root/CLAUDE.md", "$root/AGENTS.md", "$root"/.claude/rules/*.md,
-  #   "$root"/_bmad/custom/*.toml (engineering guardrails; may be gitignored →
-  #   absent in the worktree → reachable only via $root), plus any ADRs.
-  ```
-  Also load global rules: `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`.
-  Verify findings against this loaded rule set — a change that violates a project
-  guardrail (e.g. "no PM references in shipped code/docs") is itself a finding.
+  right layer for the repo's own architecture.
+- Load the project rules per `~/.claude/skills/_shared/load-rules.md` (read it
+  now — it covers the worktree/sandbox absolute-path pitfalls). A change that
+  violates a loaded guardrail (e.g. "no PM references in shipped code/docs") is
+  itself a finding.
 
 ### 3. Fan out a team of subagents (parallel, single message)
 
-Launch these concurrently via the Agent tool, each with the diff scope. Keep
-only their findings in the main thread:
+Launch these concurrently via the Agent tool, each with the diff scope. They
+inherit the session model (from an Opus session, review lanes run on Opus —
+correct; do not downgrade review lanes). Keep only their findings in the main
+thread:
 
 - `pr-reviewer` — quality, coverage, contract drift.
 - `architect-reviewer` — layer boundaries, pattern fit, API-contract validation.
@@ -93,8 +91,9 @@ only their findings in the main thread:
   explicitly to find duplicated logic to abstract and dead/unused code to remove.
 
 Scale the team to the change: a tiny diff may need only one or two lanes; a
-broad or security-sensitive one warrants all of them. Dedup overlapping findings
-before verifying.
+broad or security-sensitive one warrants all of them. Ask each lane to return
+findings as a structured list (severity, file:line, rule/source, failure
+scenario) — dedup overlapping findings before verifying.
 
 ### 4. Verify every surfaced finding yourself
 
@@ -121,7 +120,9 @@ Run an adversarial pass and loop until it stops finding blockers (cap 3 rounds,
 then escalate):
 
 - Prefer `bmad-code-review` if available (parallel Blind Hunter / Edge Case
-  Hunter / Acceptance Auditor layers).
+  Hunter / Acceptance Auditor layers). Invoke it inline via the Skill tool —
+  do not wrap it in a subagent (its layers are subagents; nested fan-out is
+  unreliable and its fallback HALTs for user input).
 - Otherwise use the `adversarial-review` skill (spawns an adversarial reviewer
   subagent in its own fresh context — that separation is the point).
 
@@ -129,7 +130,10 @@ then escalate):
 
 Emit a single severity-ranked report:
 
-- **Verdict:** APPROVE / APPROVE-WITH-NITS / REQUEST-CHANGES.
+- **Verdict** — mechanical rule, not judgment:
+  - any **Critical or Major** finding → `REQUEST-CHANGES`
+  - only **Minor** findings → `APPROVE-WITH-NITS`
+  - zero findings → `APPROVE`
 - **Verified ✅** — what you traced and confirmed correct, with file:line and
   any doc URLs. Call out security/tenant-isolation reasoning explicitly.
 - **Findings** — ranked Critical → Major → Minor. Each: one-line defect, a
@@ -145,6 +149,8 @@ Emit a single severity-ranked report:
 - Reporting a behavior claim from memory instead of a fetched source.
 - Trusting a subagent finding without re-verifying it at the cited line.
 - Claiming tests pass without running them (or without citing CI).
+- Silently skipping a grounding step because an MCP server is missing, instead
+  of falling back and flagging the weaker grounding.
 - Recommending an abstraction for something used once (YAGNI), or tolerating
   logic copied 2+ times (DRY) — check the count before deciding.
 - Fixing code inline instead of reporting.

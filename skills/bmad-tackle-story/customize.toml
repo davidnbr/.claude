@@ -6,8 +6,13 @@
 # Max dev→review→resolve iterations per story before STOP + report stall.
 max_iter = 5
 
-# Process stories strictly in dependency order (true) or allow parallel
-# loops for stories the plan confirms independent (false).
+# A finding whose id survives this many consecutive review passes = stall.
+stall_rounds = 2
+
+# Process stories strictly in dependency order (true). Setting false allows
+# parallel loops for stories the verified plan confirms independent — but
+# each parallel story's coder/resolver subagents MUST then run with
+# isolation = "worktree" (shared working tree corrupts concurrent diffs).
 sequential = true
 
 # Skip Step 1 plan verification (NOT recommended). When true, enter the
@@ -15,15 +20,18 @@ sequential = true
 skip_plan_verification = false
 
 [models]
-# Model pinned per lane (Agent tool `model` param). sonnet = Sonnet 4.6, opus = Opus 4.8.
+# Model alias pinned per lane (Agent tool `model` param). Aliases float to
+# the latest model in each family — do not pin version numbers.
+# The review gate runs INLINE in the main session (no model entry): its
+# layer subagents inherit the session model.
 plan_verify = "opus"
 code        = "sonnet"
-review      = "opus"
 resolve     = "opus"
 
 [validation]
-# Validation chain each coder/resolver subagent must run and report verbatim.
-# Override for non-Terraform stacks.
+# Default validation chain (Terraform). The skill MUST swap this for the
+# stack-appropriate chain per _shared/load-rules.md when the story targets
+# a different stack (Helm/Kustomize/app code/...).
 chain = ["terraform fmt -recursive", "tflint -f compact", "checkov --config-file ../../.checkov.yml", "terraform validate"]
 
 [scope]
