@@ -113,7 +113,9 @@
       "Edit(~/.claude/.omc-config.json)",
       "Write(~/.claude/.omc-config.json)",
       "Bash(*omc-config.json*)",
-      "Bash(*.omc-config*)"
+      "Bash(*.omc-config*)",
+      "Edit(/home/dbecerra/.claude/.omc-config.json)",
+      "Write(/home/dbecerra/.claude/.omc-config.json)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -220,13 +222,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/slack-notify.sh \"✅ Finished\""
+            "command": "$HOME/.claude/hooks/slack-notify-stop.sh"
           }
         ]
       }
     ],
     "Notification": [
       {
+        "matcher": "permission_prompt|agent_needs_input|elicitation_dialog",
         "hooks": [
           {
             "type": "command",
@@ -268,6 +271,7 @@
   },
   "sandbox": {
     "enabled": true,
+    "allowUnsandboxedCommands": false,
     "network": {
       "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
     },
@@ -275,8 +279,7 @@
       "allowWrite": ["~/nc", "~/nd"],
       "denyWrite": ["./.git"]
     },
-    "bwrapPath": "/usr/bin/bwrap",
-    "allowUnsandboxedCommands": false
+    "bwrapPath": "/usr/bin/bwrap"
   },
   "syntaxHighlightingDisabled": false,
   "effortLevel": "medium",
@@ -286,6 +289,8 @@
   "theme": "dark",
   "editorMode": "vim",
   "preferredNotifChannel": "terminal_bell",
+  "autoCompactEnabled": true,
+  "teammateMode": "tmux",
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": false
 }

@@ -30,6 +30,8 @@ jobs
 # Skills dirs
 hooks/reporag-*
 .caveman-*
+hooks/stop-notify.log
+
 
 # node
 history.jsonl
