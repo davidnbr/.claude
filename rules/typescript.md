@@ -3,11 +3,13 @@ description: TypeScript and frontend conventions
 paths: ["**/*.ts", "**/*.tsx", "**/*.jsx"]
 ---
 
-- Strict TypeScript — no `any` escape hatches
-- Functional components with hooks
-- Proper loading states, error boundaries, null guards
-- Semantic HTML, ARIA labels, keyboard navigation (WCAG 2.1 AA)
-- TanStack Query for server state, Zustand for global state
-- React Testing Library — test behavior, not implementation
-- Code splitting with `lazy()` and `Suspense`
-- No `dangerouslySetInnerHTML` without sanitization
+- Strict TypeScript (`"strict": true`); no `any` — use `unknown` + narrowing, discriminated unions, `satisfies` for config objects
+- `import type` for type-only imports; explicit return types on exported functions
+- Functional components with hooks; derive state during render instead of syncing with `useEffect`
+- Server state via TanStack Query (no `useEffect` fetching); global client state via Zustand; local state via `useState`
+- Proper loading states, error boundaries, null guards on every async surface
+- Semantic HTML first, ARIA only where semantics fall short; keyboard navigation; WCAG 2.2 AA
+- Zod (or equivalent) to validate external data at boundaries — API responses, forms, env vars
+- React Testing Library / Vitest — test behavior via accessible queries (`getByRole`), not implementation
+- Code splitting with `lazy()` + `Suspense` at route boundaries
+- No `dangerouslySetInnerHTML` without sanitization (DOMPurify); never interpolate user input into URLs/HTML
