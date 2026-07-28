@@ -148,6 +148,44 @@ Rules that are NEVER optional:
 - Never reconstruct URLs from memory — only cite URLs returned by tool calls
 - Flag uncertainty explicitly; do not paper over it with confident-sounding prose
 
+## Empirical Verification Protocol (MANDATORY — extends Verified Answer)
+
+Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, test it:
+
+- **Never abandon an approach on N failed attempts** without a controlled experiment
+  isolating the failing variable. One decisive A/B (same input, different environment;
+  or known-good control vs. candidate) beats any number of shape-guesses.
+- **Decode opaque errors by reproduction**: trigger the same error with a *known* cause
+  in a sandbox, and the error's real meaning falls out. Theorizing about error strings
+  without a reproduction is guessing.
+- **Sandbox pattern**: throwaway tenant/account/app + isolated config
+  (`AZURE_CONFIG_DIR`, separate profiles) + self-deleting probes. Free-tier directory
+  objects and dry-runs cost nothing; propose the experiment at failure #1, not after
+  the user demands it.
+- **Creation ≠ working**: a credential/config/resource being accepted proves nothing
+  about runtime. Follow every "it created fine" with the end-to-end probe before
+  migrating anything that currently works.
+
+## Delivery Protocol (MANDATORY)
+
+- **Design pivots need an explicit go.** When direction changes from what was previously
+  agreed — even in autonomous/background mode — post a ≤10-line proposal plus the
+  behavior-delta table, and WAIT. Autonomy covers executing the agreed direction, not
+  choosing a new one. Reversible ≠ unsurprising.
+- **Behavior-delta table** for any infra/CI/workflow change: one row per run type
+  (branch / main / tag / prod / etc.), before vs. after. Every narrowing or regression
+  is its own flagged row — never buried in prose.
+- **Runbooks for third parties** (admins, teammates) must be: self-contained
+  (re-derive every variable — shell sessions die), shipped in Bash AND PowerShell AND
+  portal-UI steps when Azure is involved, with expected success output, expected
+  failure output + interpretation, cleanup commands, and a cost/billing note.
+- **Secrets never transit chat.** The user runs `gh secret set` / vault writes locally.
+  Any new long-lived credential is annotated at creation with: scope floor, what a leak
+  actually exposes, rotation mechanism, expiry, revoke path, audit trail.
+- **Findings ledger.** Reviews and investigations append findings — and, when
+  addressed, the implemented solutions — to the relevant story/spike `.md`, with a
+  change-log row per decision. The doc is the audit trail that survives the session.
+
 ## Technology Preferences
 
 - **IaC**: Terraform >= 1.7, Terragrunt for multi-env

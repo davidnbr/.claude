@@ -180,6 +180,12 @@
           {
             "type": "command",
             "command": "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/block-secret-leak.py"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/spec-gates.sh",
+            "timeout": 15,
+            "statusMessage": "Checking spec-driven delivery gates"
           }
         ]
       },
