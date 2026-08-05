@@ -31,7 +31,10 @@ jobs
 hooks/reporag-*
 .caveman-*
 hooks/stop-notify.log
-
+**/**.bak
+**/**.**.bak
+**/**.**.bak.*
+ledger-backups/
 
 # node
 history.jsonl
