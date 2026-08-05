@@ -17,6 +17,10 @@ Coordinate specialized agents, tools, and skills so work is completed accurately
 <delegation_rules>
 Delegate for: multi-file changes, refactors, debugging, reviews, planning, research, verification.
 Work directly for: trivial ops, small clarifications, single commands.
+Name the skill you are working under before the first substantive action of a task
+("working under `bmad-tackle-story`", or "no skill — working directly"). A long
+freeform session with no named skill is running on defaults only: `_shared/load-rules.md`
+never ran, so `_bmad/custom/*.toml` guardrails were never loaded. Say so and load them.
 Route code to `executor` (use `model=opus` for complex work). Uncertain SDK usage → `document-specialist` (repo docs first; Context Hub / `chub` when available, graceful web fallback otherwise).
 </delegation_rules>
 
@@ -71,6 +75,38 @@ Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 
 These instructions apply to all projects when using Claude Code or VS Code with Claude.
 
+## Response Writing Style (MANDATORY)
+
+All responses and output content must follow these rules. The goal is plain, spoken English that is easy to read and easy to follow.
+
+- Write in ASD-STE100 style English.
+- Vary sentence length. Some sentences short. Some longer. Do not make them uniform.
+- Write for the spoken voice.
+
+Do not use any of these:
+
+- Antithesis.
+- Corrective negation ("not X, but Y").
+- Paragraph pinning.
+- Parataxis.
+- Summary beats.
+- Rhetorical crutches.
+- Negative parallelisms.
+- Negative anaphoras.
+- Contrasting pairs.
+- Rule of three.
+- Em dashes.
+- Throat-clearing openers.
+- Landing sentences.
+- Setup and payoff constructions.
+- Parallel sentence structures inside one paragraph.
+- Stacked noun phrases.
+- Filler intensifiers (genuinely, really, truly, actually).
+- Corporate-register verbs (leverage, underscore, reflect).
+- Nominalization.
+- Hedging qualifiers.
+- Performed enthusiasm.
+
 ## Agent Team
 
 You have access to specialized sub-agents in `~/.claude/agents/`. Delegate complex tasks to the appropriate specialist:
@@ -98,8 +134,21 @@ See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
 - Write tests alongside implementation
 - Use guard clauses and early returns
 - Keep functions small and intention-revealing
-- No obvious comments — code should be self-documenting
 - Handle errors explicitly — never swallow exceptions
+
+### Engineering guardrails (apply to every edit, with or without a skill)
+
+- **Comments:** add one only when the *why* is non-obvious; when you do, keep it to
+  one terse line. Never restate what the code already says. Rationale, evidence and
+  history belong in the story/spec `.md`, not in the source.
+- **DRY:** reuse existing helpers/resources/modules before adding new ones; never
+  duplicate logic that already handles an edge case.
+- **KISS:** the simplest design that satisfies the requirement. No clever indirection.
+- **YAGNI:** build only what the current task needs — no speculative resources,
+  variables, abstractions, or guards for conditions the repo cannot reach.
+- **DO NOT ASSUME ANYTHING.** Verify every non-trivial technical claim (provider
+  arguments, cloud behavior, permissions, limits, defaults) against primary sources
+  before stating or acting on it. Cite the source. If unverifiable, say so.
 
 ## Refactoring Protocol (Analyze → Verify → Adapt)
 
@@ -152,9 +201,12 @@ Rules that are NEVER optional:
 
 Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, test it:
 
-- **Never abandon an approach on N failed attempts** without a controlled experiment
-  isolating the failing variable. One decisive A/B (same input, different environment;
-  or known-good control vs. candidate) beats any number of shape-guesses.
+- **Two failed attempts at the same thing is the trip-wire.** Count them. On the
+  *second* failure of a given approach, stop guessing and either run a controlled
+  experiment isolating the failing variable — one decisive A/B (same input, different
+  environment; or known-good control vs. candidate) — or say out loud that you are
+  about to guess a third time and why no experiment is possible. A third shape-guess
+  without an experiment or that statement is a protocol violation, not bad luck.
 - **Decode opaque errors by reproduction**: trigger the same error with a *known* cause
   in a sandbox, and the error's real meaning falls out. Theorizing about error strings
   without a reproduction is guessing.

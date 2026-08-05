@@ -2,7 +2,6 @@
 name: bmad-tackle-story
 description: 'Tackle an existing BMAD story (or story range like aks-1-3..aks-1-5) end-to-end by orchestrating a dev→review→resolve loop: a coder subagent runs /bmad-dev-story, the review gate runs /bmad-code-review inline (it fans out its own parallel adversarial layers), and a resolver subagent runs /bmad-resolve-review — looping until the review is clean with zero findings. Use when the user says "tackle story X", "tackle aks-1-3..aks-1-5", "run the dev/review loop on this story", or "build this story with a team".'
 model: opus
-disable-model-invocation: true
 arguments: [story]
 ---
 
@@ -67,24 +66,30 @@ loop:
 ```
 
 ### (a) Coder subagent
+
 Spawn via the Agent tool. Instruct it to invoke the `bmad-dev-story` skill on the target story and **only** that story. It must:
+
 - Implement to satisfy ALL acceptance criteria + tasks/subtasks.
 - Run the stack-appropriate validation chain and report results verbatim.
 - Update only the allowed story-file sections (Tasks checkboxes, Dev Agent Record, File List, Change Log, Status).
 - Return the structured contract below. NOT self-approve.
 
 ### (b) Review gate — inline, never in a subagent
+
 Invoke `bmad-code-review` yourself via the Skill tool, in the main thread. It fans out its own parallel adversarial layer subagents (fresh contexts — the author/review separation lives there). **Do not wrap it in a subagent**: nested fan-out is unreliable, and its no-subagents fallback HALTs waiting for user input, which silently stalls this loop. Direct it to:
+
 - **Think like a state machine**: enumerate states/transitions the change introduces (resource lifecycle, creation→update→destroy, ordering, drift) and check each.
 - Honor the loaded rule set; cite the rule or vendor doc behind every finding.
 - Return findings in the structured contract (severity, file:line, rule/source, smallest correct fix). Explicitly `findings: []` when clean.
 
 ### (c) Triage
+
 - `findings` empty → story DONE.
 - Otherwise assign each finding a stable `id` (`<file>#<rule-or-short-slug>`), record the iteration's findings (see Step 3), and carry them to resolve.
 - If a finding contradicts a project rule or smells wrong, do NOT auto-fix — pass it to the resolver flagged as disputed; a finding can be wrong (YAGNI). The resolver verifies and rebuts with evidence if warranted.
 
 ### (d) Resolver subagent
+
 Spawn a subagent to invoke `bmad-resolve-review` in **local mode** (no PR, no user interaction — it must not wait for user input). It verifies each finding against authoritative sources, applies the smallest correct fix to valid ones, rebuts invalid ones with cited evidence, re-runs the validation chain, and returns the structured contract. Then goto (b).
 
 ## Structured lane contract
@@ -98,13 +103,19 @@ Every lane returns exactly this JSON (as its final output — instruct each suba
   "halt_reason": "only when status=halt",
   "plan_sound": "plan lane only: true|false",
   "findings": [
-    {"id": "path/file.tf#rule-slug", "severity": "critical|major|minor",
-     "file": "path", "line": 0, "rule": "cited rule or doc URL",
-     "summary": "one line", "fix": "smallest correct fix",
-     "resolution": "resolve lane only: fixed|rebutted|deferred"}
+    {
+      "id": "path/file.tf#rule-slug",
+      "severity": "critical|major|minor",
+      "file": "path",
+      "line": 0,
+      "rule": "cited rule or doc URL",
+      "summary": "one line",
+      "fix": "smallest correct fix",
+      "resolution": "resolve lane only: fixed|rebutted|deferred"
+    }
   ],
   "files_changed": ["..."],
-  "validation": [{"cmd": "...", "pass": true}]
+  "validation": [{ "cmd": "...", "pass": true }]
 }
 ```
 
@@ -119,18 +130,19 @@ If a lane returns freeform text instead, extract it into this shape yourself bef
 ## Step 4 — Finish
 
 When all in-scope stories are review-clean:
+
 - Summarize per story: status, files changed, iterations, final validation result.
 - Do NOT commit, push, or open a PR unless the user asks (`[scope].never_without_ask`) — that's `bmad-resolve-review`/`open-pr` territory and outward-facing.
 
 ## Model Map
 
-| Lane | Where it runs | Model (via Agent tool `model` param) | Skill |
-|---|---|---|---|
-| Orchestrator | main session | opus (pinned by this skill's frontmatter) | — |
-| Plan verify | subagent, read-only | `opus` alias (latest Opus) | — |
-| Code | subagent | `sonnet` alias (latest Sonnet) | `bmad-dev-story` |
-| Review gate | **inline** (its layers are subagents inheriting the session model) | session model (opus) | `bmad-code-review` |
-| Resolve | subagent | `opus` alias | `bmad-resolve-review` |
+| Lane         | Where it runs                                                      | Model (via Agent tool `model` param)      | Skill                 |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------- | --------------------- |
+| Orchestrator | main session                                                       | opus (pinned by this skill's frontmatter) | —                     |
+| Plan verify  | subagent, read-only                                                | `opus` alias (latest Opus)                | —                     |
+| Code         | subagent                                                           | `sonnet` alias (latest Sonnet)            | `bmad-dev-story`      |
+| Review gate  | **inline** (its layers are subagents inheriting the session model) | session model (opus)                      | `bmad-code-review`    |
+| Resolve      | subagent                                                           | `opus` alias                              | `bmad-resolve-review` |
 
 Aliases float to the latest model in each family — never pin version numbers here.
 
