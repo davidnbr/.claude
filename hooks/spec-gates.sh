@@ -7,8 +7,11 @@
 #   git push       -> a recent spec .md must record a verdict line
 #                     "Adversarial review: PASSED (round N, YYYY-MM-DD)" dated
 #                     today or yesterday, or the same in .omc/state/adversarial-verdict.
-#   gh pr create/edit (infra branches only) -> a behavior-delta table must
-#                     exist in a recent spec .md or .omc/state/delta-table.md.
+#   gh pr create/edit (any code change; docs-only diffs exempt) -> a
+#                     behavior-delta table must exist in a recent spec .md or
+#                     .omc/state/delta-table.md, AND coverage evidence (a
+#                     "Coverage" heading or "coverage ladder" section) in a
+#                     recent spec .md or .omc/state/coverage.md.
 #
 # Spec-dir resolution follows trackedness: a git-tracked spec dir is gated in the
 # worktree (it travels with the branch); an ignored one has no worktree copy at
@@ -157,41 +160,32 @@ case "$GATE" in
     # Local ref only — `git remote show origin` hits the network and can hang.
     BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
     BASE=${BASE:-main}
-    # An unresolvable base means the diff is unknown, not that nothing changed.
-    INFRA_RE='(^|/)(\.github/workflows/|\.github/actions/|terraform/|Dockerfile([./]|$)|docker-compose[^/]*\.ya?ml|\.pre-commit-config\.yaml|action\.ya?ml)'
-    # Repos whose infra lives elsewhere (helm charts, argocd manifests, …) opt in
-    # with one extended-regex line that WIDENS the path match. Sources, first
-    # hit wins: a repo-committed .claude/spec-gates-infra.regex (worktree copy
-    # over main checkout's), else the user-local
-    # ~/.claude/spec-gates-infra.d/<main-checkout-basename>.regex — for repos
-    # that must not carry the file in git.
-    EXTRA_F=""
-    for r in "${ROOTS[@]}"; do
-      [ -f "$r/.claude/spec-gates-infra.regex" ] && EXTRA_F="$r/.claude/spec-gates-infra.regex" && break
-    done
-    if [ -z "$EXTRA_F" ]; then
-      USER_F="$HOME/.claude/spec-gates-infra.d/$(basename "${MAIN_ROOT:-$ROOT}").regex"
-      [ -f "$USER_F" ] && EXTRA_F="$USER_F"
-    fi
-    if [ -n "$EXTRA_F" ]; then
-      EXTRA_RE=$(head -c 512 "$EXTRA_F" | tr -d '\r' | head -n 1)
-      # An invalid regex would make the combined grep fail and silently open
-      # the gate; validate alone first (exit >=2 = bad pattern) and drop it.
-      if [ -n "$EXTRA_RE" ]; then
-        printf '' | grep -E -- "$EXTRA_RE" >/dev/null 2>&1
-        [ $? -le 1 ] && INFRA_RE="${INFRA_RE}|${EXTRA_RE}"
-      fi
-    fi
+    # Gate ANY code change; only docs-only diffs pass free. An unresolvable
+    # base means the diff is unknown, not that nothing changed — gate it.
+    DOCS_RE='\.(md|markdown|txt|rst|adoc)$'
     if git rev-parse --verify --quiet "origin/${BASE}" >/dev/null 2>&1; then
-      INFRA=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null | grep -E -- "$INFRA_RE" || true)
+      GATED=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null | grep -vE -- "$DOCS_RE" || true)
     else
-      INFRA="origin/${BASE} unresolvable"
+      GATED="origin/${BASE} unresolvable"
     fi
-    [ -z "$INFRA" ] && exit 0
+    [ -z "$GATED" ] && exit 0
     RECENT=$(recent_spec_mds)
-    if [ -n "$RECENT" ] && printf '%s\n' "$RECENT" | xargs -r grep -li 'behavior[- ]delta' >/dev/null 2>&1; then exit 0; fi
-    if [ -s "$ROOT/.omc/state/delta-table.md" ]; then exit 0; fi
-    deny "spec-gates: this branch changes CI/infra but no behavior-delta table was found (a 'Behavior delta' section in a recent spec .md, or .omc/state/delta-table.md). Write one row per run type (branch/main/tag/prod), before vs after, then retry. Escape hatch: OMC_SKIP_HOOKS=spec-gates."
+    DELTA_OK="" COV_OK=""
+    if [ -n "$RECENT" ] && printf '%s\n' "$RECENT" | xargs -r grep -li 'behavior[- ]delta' >/dev/null 2>&1; then DELTA_OK=1; fi
+    [ -s "$ROOT/.omc/state/delta-table.md" ] && DELTA_OK=1
+    # Coverage evidence: a "Coverage" heading or the phrase "coverage ladder" in
+    # a recent ledger, or the .omc/state mirror. Substring "coverage" alone is
+    # too loose (appears in ordinary prose).
+    if [ -n "$RECENT" ] && printf '%s\n' "$RECENT" | xargs -r grep -liE '^#{1,6}[[:space:]]+coverage|coverage ladder' >/dev/null 2>&1; then COV_OK=1; fi
+    [ -s "$ROOT/.omc/state/coverage.md" ] && COV_OK=1
+    [ -n "$DELTA_OK" ] && [ -n "$COV_OK" ] && exit 0
+    MISSING=""
+    [ -z "$DELTA_OK" ] && MISSING="a behavior-delta table (a 'Behavior delta' section in a recent spec .md — one row per run type, before vs after — or .omc/state/delta-table.md)"
+    if [ -z "$COV_OK" ]; then
+      [ -n "$MISSING" ] && MISSING="${MISSING} AND "
+      MISSING="${MISSING}coverage evidence (a 'Coverage' heading or 'coverage ladder' section listing each rung ran or skip-reasoned, in a recent spec .md or .omc/state/coverage.md)"
+    fi
+    deny "spec-gates: this branch changes code but ${MISSING} was not found. Record it, then retry. Escape hatch: OMC_SKIP_HOOKS=spec-gates."
     ;;
 esac
 exit 0

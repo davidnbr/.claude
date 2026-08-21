@@ -35,7 +35,13 @@ it as written.
    tests (kubeconform, conftest/OPA, `terraform validate` + plan assertions),
    policy scans (checkov/trivy), and an empirical probe against a real or
    rendered system. Each rung skipped gets a one-line reason in the ledger —
-   silence is not a skip.
+   silence is not a skip. **Scenario parity**: where the spec system expresses
+   behavior as scenarios — BMAD story `#### Scenario:` sections, openspec
+   WHEN/THEN blocks, Gherkin `.feature` files, whatever presentation the repo
+   already uses — every changed behavior maps to a scenario: update stale ones,
+   add missing ones, and confirm each scenario is exercised by a test at some
+   rung. Never impose a specific BDD tool or format; follow the repo's own
+   presentation, and skip this only when the repo has no scenario-style specs.
 10. **Wire-level verification beats simulation.** A simulator/trace/dry-run
    proves matching or rendering, never end-to-end effect. "Config accepted",
    "manifest Valid", "trace matched" are intermediate signals; the claim "it
@@ -48,6 +54,12 @@ it as written.
    controlled reproduction decides); fail-safe extension points (invalid config
    input degrades to the safe default, never opens a gate); state claims
    verified at write time; withdrawal is a full unwind.
+12. **Complexity stays in budget.** Run the repo's own complexity gate on
+   changed files when one exists (lint rule such as eslint `complexity`,
+   radon/xenon, gocyclo, a configured threshold in the repo's linter). When
+   none exists, judge changed functions for excessive branching/nesting and
+   flag offenders as findings with a suggested split — do not install or
+   mandate a new tool for a repo that has none.
 
 ## Stage checklist (copy per unit, check off as you go)
 
@@ -173,7 +185,10 @@ Write into the ledger (and mirror to `.omc/state/` as hook fallback):
    same line to `.omc/state/adversarial-verdict`.
 2. A `## Behavior delta` section with the table (every unit, per Stage P) — also
    mirror the table to `.omc/state/delta-table.md`.
-3. Change-log row(s) for the decisions made.
+3. A `## Coverage` section: one row per rung (per non-negotiable 9, scenario
+   parity included), ran or skip-reasoned — also mirror to
+   `.omc/state/coverage.md`. The PR gate requires this evidence.
+4. Change-log row(s) for the decisions made.
 
 ## Stage R — Report contract
 

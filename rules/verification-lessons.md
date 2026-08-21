@@ -7,7 +7,6 @@ Extend the Empirical Verification and Delivery protocols in ~/.claude/CLAUDE.md.
 - This file and ~/.claude/CLAUDE.md carry general rules only. One repo's
   paths, commands, vendors, or ticket prefixes go in project-local files
   (project CLAUDE.md / AGENTS.md, `.claude/` config, `_bmad/custom/*.toml`).
-- Per-repo spec-gate opt-ins: `~/.claude/spec-gates-infra.d/<basename>.regex`.
 - Rules that must ALWAYS run are hooks, not instructions — CLAUDE.md and
   rules files are advisory context; hooks are deterministic.
 

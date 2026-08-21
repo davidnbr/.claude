@@ -186,7 +186,7 @@ Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, te
 
 - **IaC**: Terraform >= 1.7, Terragrunt for multi-env
 - **Containers**: Docker multi-stage builds, ECS Fargate / EKS
-- **Cloud**: AWS (prefer AWSCC provider for Terraform)
+- **Cloud**: whatever the project uses (AWS: prefer AWSCC provider for Terraform; Azure: azurerm/azapi). No default — read the repo's providers/lockfiles first
 - **Monitoring**: Datadog, CloudWatch, Prometheus/Grafana
 - **Security scanning**: Checkov, Trivy, Snyk
 
