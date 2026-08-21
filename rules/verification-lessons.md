@@ -11,6 +11,12 @@ Extend the Empirical Verification and Delivery protocols in ~/.claude/CLAUDE.md.
 - Rules that must ALWAYS run are hooks, not instructions — CLAUDE.md and
   rules files are advisory context; hooks are deterministic.
 
+## Sources
+
+- **Never use the Fetch/WebFetch tools.** Find candidate URLs with search
+  (WebSearch, doc-search MCP tools), then `curl` the URL yourself and
+  grep/strip the content locally. Cite only URLs you actually retrieved.
+
 ## Verification
 
 - **Reconciled systems: mutate the source of truth.** Where a reconciler

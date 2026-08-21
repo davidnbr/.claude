@@ -4,12 +4,14 @@ description: >
   Run a grounded, senior-engineer PR review on a branch — verify EVERY claim
   against real source (no assumptions), trace the changed logic like a
   state-machine, check it against best patterns for the project's actual stack
-  and architecture, and enforce DRY / KISS / YAGNI (flag duplication to abstract,
-  dead code to remove). Fans out a team of subagents for coverage, grounds
-  findings with reporag + up-to-date library docs, runs the tests it can, and
-  ends with an adversarial-review gate (bmad-code-review if available, else
-  adversarial-review). Use when the user asks for a "complete PR review", a
-  review "iteration", or a deep/grounded senior review of a branch or diff.
+  and architecture, and enforce DRY / KISS / YAGNI, maintainability, performance,
+  reliability, security, and test coverage. Fans out a team of review
+  subagents (5 max unless the user overrides), grounds findings with reporag +
+  up-to-date primary docs (search + curl, never Fetch/WebFetch), runs the
+  tests it can, and ends with an adversarial-review gate (bmad-code-review if
+  available, else adversarial-review). Use when the user asks for a "complete
+  PR review", a review "iteration", or a deep/grounded senior review of a
+  branch or diff.
 allowed-tools: 'Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr checks:*)'
 ---
 
@@ -31,17 +33,30 @@ Core rules (non-negotiable):
   what happens in each. Bugs hide in the transitions, not the happy path.
 - **Ground with tools, not memory.** Use `reporag` (`find_existing`,
   `query_code`, `get_symbol`, `get_architecture`, `ask_project`) to locate real
-  patterns and callers. Use `context7-docs` / `Ref` / `microsoft-learn` /
-  `WebFetch` against primary sources for any version-specific stack claim.
-  Pin every stack claim to the exact version in `requirements*.txt` /
+  patterns and callers. Use `context7-docs` / `Ref` / `microsoft-learn` for
+  version-specific stack claims; for the open web, **never use Fetch/WebFetch**
+  — find URLs with search (WebSearch), then `curl` the page and grep/strip it
+  locally. Pin every stack claim to the exact version in `requirements*.txt` /
   `package.json` / lockfiles. **If an MCP server is unavailable** (headless
   session, other machine), fall back to Grep/Glob/Read for pattern discovery
-  and WebFetch for docs — and mark in the report which claims had weaker
+  and search + curl for docs — and mark in the report which claims had weaker
   grounding rather than silently skipping the check.
-- **DRY / KISS / YAGNI.** If logic is duplicated 2+ times, recommend abstracting
-  it for maintainability. If a function/export/branch is created but unused,
+- **Best current patterns for the actual stack.** Judge the change against the
+  best recommended, up-to-date patterns for the exact stack and version in use
+  — verified from primary docs at review time, not recalled. Deviation from
+  the recommended pattern without a stated reason is a finding.
+- **DRY / KISS / YAGNI / maintainability.** If logic is duplicated 2+ times,
+  recommend abstracting it. If a function/export/branch is created but unused,
   recommend removing it. Prefer the simplest correct design; flag cleverness
-  that isn't paying rent.
+  that isn't paying rent and coupling that will hurt the next maintainer.
+- **Performance counts.** Check the changed paths for avoidable cost: N+1
+  queries, per-request work that belongs at startup, unbounded collections,
+  missing indexes/caches, chatty network hops. A performance regression on a
+  hot path is a Major finding, not a nit.
+- **Hold the goal and scope.** Before judging, restate the PR's intent (ticket,
+  PR body, story ledger) and review against it. Reliability is part of the
+  goal: flag anything flaky, unrecoverable, or silently degrading. Out-of-scope
+  wishes are non-blocking notes, never blockers.
 - **Author vs. review separation.** This skill only reviews. Do not fix inline;
   report findings. (Fixes are a separate pass — e.g. `/bmad-resolve-review`.)
 
@@ -77,23 +92,32 @@ Core rules (non-negotiable):
 
 ### 3. Fan out a team of subagents (parallel, single message)
 
-Launch these concurrently via the Agent tool, each with the diff scope. They
-inherit the session model (from an Opus session, review lanes run on Opus —
-correct; do not downgrade review lanes). Keep only their findings in the main
-thread:
+**Cap: 5 subagents total per run**, unless the user specifies a different
+number — a user-given count overrides the cap. Launch the lanes concurrently
+via the Agent tool, each with the diff scope. They inherit the session model
+(from an Opus session, review lanes run on Opus — correct; do not downgrade
+review lanes). Keep only their findings in the main thread:
 
-- `pr-reviewer` — quality, coverage, contract drift.
-- `architect-reviewer` — layer boundaries, pattern fit, API-contract validation.
-- `security-auditor` — auth / tenant isolation / injection / secrets. Swap in a
-  domain-specific reviewer (e.g. `hipaa-compliance-reviewer`) whenever the diff
-  touches regulated or sensitive data (PHI/PII).
-- A DRY/KISS/YAGNI sweep — `code-simplifier` or a `general-purpose` agent tasked
-  explicitly to find duplicated logic to abstract and dead/unused code to remove.
+- `pr-reviewer` — quality, contract drift, reliability (flaky paths, silent
+  degradation, missing error handling).
+- `architect-reviewer` — layer boundaries, stack best-pattern fit,
+  API-contract validation, maintainability.
+- `security-auditor` — auth / tenant isolation / injection / secrets /
+  known-vulnerable dependencies. Swap in a domain-specific reviewer (e.g.
+  `hipaa-compliance-reviewer`) whenever the diff touches regulated or
+  sensitive data (PHI/PII).
+- A DRY/KISS/YAGNI + performance sweep — `code-simplifier` or a
+  `general-purpose` agent tasked to find duplicated logic to abstract,
+  dead/unused code to remove, and avoidable cost on changed paths.
+- A test-coverage lane — `oh-my-claudecode:test-engineer` (or
+  `general-purpose`): every behavior change has a test that fails without it;
+  mocks only at true system boundaries; assertions that cannot fail are
+  findings; name untested changed paths explicitly.
 
-Scale the team to the change: a tiny diff may need only one or two lanes; a
-broad or security-sensitive one warrants all of them. Ask each lane to return
-findings as a structured list (severity, file:line, rule/source, failure
-scenario) — dedup overlapping findings before verifying.
+Scale the team down for a tiny diff (one or two lanes may suffice); a broad or
+security-sensitive diff warrants all five. Ask each lane to return findings as
+a structured list (severity, file:line, rule/source, failure scenario) — dedup
+overlapping findings before verifying.
 
 ### 4. Verify every surfaced finding yourself
 
@@ -101,8 +125,9 @@ Subagent claims are leads, not facts. For each:
 
 - Open the cited file:line and confirm it says what the finding claims.
 - For any stack/library behavior (filter parsing, defaults, ORM/framework
-  semantics, client-side behavior), fetch the **primary doc or library source**
-  for the exact installed version. Quote it.
+  semantics, client-side behavior), pull the **primary doc or library source**
+  for the exact installed version (doc MCPs, or search → curl — never
+  Fetch/WebFetch). Quote it.
 - Walk the state-machine for the code path and confirm the failure scenario is
   reachable. Drop findings you cannot reproduce in the logic.
 
@@ -140,13 +165,20 @@ Emit a single severity-ranked report:
   concrete failure scenario (inputs → wrong result), the file:line, and a
   recommended direction (not an inline fix).
 - **DRY/YAGNI** — duplication to abstract; unused code to remove.
+- **Coverage** — per behavior change: covered (cite the test) or uncovered
+  (finding). State what the coverage claim is based on (tests run vs. read).
+- **Performance** — changed hot paths checked; regressions found or "none
+  observed" with what was examined.
 - **Iteration note** (if ≥2) — confirm each prior-round item was addressed.
 - Distinguish blocking findings from non-blocking nits; a stylistic nit with
   zero functional/security impact is explicitly non-blocking.
 
 ## Anti-patterns for this skill
 
-- Reporting a behavior claim from memory instead of a fetched source.
+- Reporting a behavior claim from memory instead of a retrieved source.
+- Using Fetch/WebFetch — sources come from search (WebSearch/doc MCPs) plus
+  `curl` + grep, per the global Sources rule.
+- Exceeding the 5-subagent cap without an explicit user override.
 - Trusting a subagent finding without re-verifying it at the cited line.
 - Claiming tests pass without running them (or without citing CI).
 - Silently skipping a grounding step because an MCP server is missing, instead

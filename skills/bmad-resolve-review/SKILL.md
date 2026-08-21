@@ -7,7 +7,7 @@ description: 'Verify, address, and reply to PR/code-review findings from a senio
 
 **Goal:** Take a set of review findings (PR comments, `/bmad-code-review` output, or pasted text) and drive each to a resolved state — fixed or rebutted with evidence.
 
-**Your Role:** Senior engineer answering a review. You verify before you act, cite sources, change as little as possible, and write replies a human reviewer respects. DRY, KISS, YAGNI.
+**Your Role:** Senior lead engineer answering a review. You verify before you act, cite sources, change as little as possible, and write replies a human reviewer respects. DRY, KISS, YAGNI. You judge every fix for long-term maintainability on the current stack, not just "makes the comment go away".
 
 ## Modes (decide first)
 
@@ -16,11 +16,18 @@ description: 'Verify, address, and reply to PR/code-review findings from a senio
 
 ## Core Principles (never skip)
 
-1. **Verify, don't assume.** Every factual claim in a finding — and every claim in your response — is checked against an authoritative source before you act: the loaded rule set, the actual code, and vendor docs (Microsoft Learn / Terraform Registry / provider docs via MCP or WebFetch). Reconstructed-from-memory facts are not allowed.
+1. **Verify, don't assume.** Every factual claim in a finding — and every claim in your response — is checked against an authoritative source before you act: the loaded rule set, the actual code, and vendor docs (Microsoft Learn / Terraform Registry / provider docs via doc MCPs, or search + `curl` — never Fetch/WebFetch, per the global Sources rule). Reconstructed-from-memory facts are not allowed.
+1a. **If any doubt, ask.** When a finding's intent, the agreed solution, or the right fix direction is genuinely ambiguous, ask the user before acting (PR mode). In local mode, return `status: halt` with the question as `halt_reason` — never guess through ambiguity.
 2. **A finding can be wrong.** Reviewers make mistakes. If the finding's premise is false, the correct action is a respectful rebuttal with a cited source — not a code change. Do not "fix" things that aren't broken (YAGNI).
 3. **Smallest correct change.** When a finding is valid, make the minimal edit that resolves it. No drive-by refactors, no new abstractions.
 4. **Evidence over opinion.** Both fixes and rebuttals reference something concrete: a rule line, a doc URL, a sibling resource, a provider default.
 5. **Loop until done.** Every finding ends in one of: `fixed`, `rebutted`, or `deferred` (deferral needs explicit user sign-off in PR mode, or a stated reason in the structured report in local mode).
+
+## Delivery bar
+
+Fixes made here are deliveries. Apply `~/.claude/skills/_shared/verified-delivery-core.md` proportionally:
+- **Non-negotiable 9 (coverage ladder)** and the **Stage P behavior-delta table** for every fix (see Step 3).
+- **Stage R report contract** for the final report (see Step 8 / Output).
 
 ## Load rules
 
@@ -40,6 +47,21 @@ If the source is ambiguous and a user is present, ask once: "Which PR / which fi
 
 ## Workflow
 
+### Step 0 — Ground first: patterns, fixes, and goals (before touching any finding)
+
+- **Recommended patterns and fixes for the current stack.** Identify the exact
+  stack and versions in play (lockfiles, provider constraints, chart versions),
+  then pull the current recommended patterns and fix approaches from primary
+  docs (doc MCPs, or search + `curl`). Fixes are chosen from these, not from
+  memory or from whatever the reviewer suggested verbatim.
+- **Restate the goal and the defined solution.** Read the story/spec ledger, PR
+  body, or ticket and write one short paragraph: what we want to achieve and
+  how the solution was defined. Every verdict and fix in later steps is judged
+  against this — a fix that satisfies the comment but drifts from the agreed
+  solution is wrong.
+- If the goal or the agreed solution cannot be established from the available
+  sources: ask (PR mode) or halt with the question (local mode), per principle 1a.
+
 ### Step 1 — Gather findings
 - Pull every finding into a numbered list, preserving any provided finding `id`s. For PRs: `gh api repos/<owner>/<repo>/pulls/<n>/comments --jq '.[] | {id, user:.user.login, path, line, body}'`.
 - Note each finding's anchor (`path:line` and comment `id`) so replies can be threaded later via `in_reply_to`.
@@ -48,7 +70,8 @@ If the source is ambiguous and a user is present, ask once: "Which PR / which fi
 For each finding, independently and in parallel where possible:
 - Read the cited code at `path:line`.
 - Check the relevant project rule (the loaded rule set) — does it support or contradict the finding?
-- Check the authoritative vendor source for any technical claim (e.g. "AKS modifies the subnet NSG", "this default is X"). Use MCP doc tools or WebFetch. **Cite the URL you actually fetched.**
+- Check the authoritative vendor source for any technical claim (e.g. "AKS modifies the subnet NSG", "this default is X"). Use MCP doc tools, or search + `curl` (never Fetch/WebFetch). **Cite the URL you actually retrieved.**
+- Check the finding against Step 0's goal statement and recommended patterns: does the requested change move toward the agreed solution, and is the suggested fix the stack's recommended one? A real concern with a non-recommended fix is **PARTIAL** — fix it the recommended way.
 - Classify: **VALID** (premise holds), **INVALID** (premise false), or **PARTIAL** (real concern, wrong fix).
 
 Produce a verdict table before touching code:
@@ -60,6 +83,8 @@ Produce a verdict table before touching code:
 - Apply the smallest correct change for each VALID / PARTIAL finding.
 - If dev context exists, defer to `/bmad-dev-story` conventions (task mapping, File List, Change Log). For a pure review-fix outside a story, a direct minimal edit is fine.
 - Run the stack-appropriate validation chain after edits (per `_shared/load-rules.md`). Report pre-existing failures separately from anything you introduced — never claim a fix passed checks it didn't run.
+- **Coverage ladder (delivery-core non-negotiable 9).** Every behavior-changing fix ships tests at the rungs the stack supports, discovered from the repo's own harness: unit → integration → e2e → mutation (where a maintained tool exists). Declarative stacks: schema/contract tests (kubeconform, conftest/OPA, plan assertions), policy scans (checkov/trivy), plus an empirical probe. Each skipped rung gets a one-line reason — silence is not a skip.
+- **Behavior-delta row per fix (delivery-core Stage P).** One table row per fix: affected caller / run type / input class, before vs. after; every narrowing flagged. A pure-internal fix writes `none — internal only`, and that claim is verified, not assumed.
 
 ### Step 4 — Draft replies (PR mode only)
 One reply per finding. Tone = a busy senior engineer, not a bot:
@@ -86,6 +111,9 @@ Verify threading with a follow-up `--jq '.[] | {id, in_reply_to_id, user}'`.
 ### Step 7 — Loop check
 Re-scan the findings list. Any finding not yet `fixed`/`rebutted`/`deferred`? Return to Step 2 for it. Only report done when the list is fully resolved.
 
+### Step 8 — Final report (PR mode)
+The final message follows the **Stage R report contract** (delivery-core): what was done; behavior with the delta table inline; logic and data flow (one line per hop, `file:line`); a `mermaid stateDiagram-v2` when a fix touched a stateful flow (skip with a one-line reason otherwise); the 3–10 key functions/resources a maintainer would read first; evidence links (validation output, test runs, probe results).
+
 ## Output (local mode, or when an orchestrator asked for it)
 
 Return this JSON as your final output:
@@ -99,14 +127,16 @@ Return this JSON as your final output:
     {"id": "path/file.tf#rule-slug", "severity": "critical|major|minor",
      "file": "path", "line": 0, "rule": "cited rule or doc URL",
      "summary": "one line", "fix": "what was changed (or why rebutted)",
-     "resolution": "fixed|rebutted|deferred"}
+     "resolution": "fixed|rebutted|deferred",
+     "delta": "optional: before → after one-liner (or 'none — internal only')"}
   ],
   "files_changed": ["..."],
-  "validation": [{"cmd": "...", "pass": true}]
+  "validation": [{"cmd": "...", "pass": true}],
+  "coverage": [{"rung": "unit|integration|e2e|mutation|schema|policy|probe", "ran": true, "reason": "one line when ran=false"}]
 }
 ```
 
-Preserve incoming finding `id`s verbatim — orchestrators use them for stall detection.
+`delta` and `coverage` are additive — existing keys and their meaning are unchanged, so current orchestrator consumers keep working. Preserve incoming finding `id`s verbatim — orchestrators use them for stall detection.
 
 ## Integration
 
@@ -117,5 +147,6 @@ Preserve incoming finding `id`s verbatim — orchestrators use them for stall de
 ## Done criteria
 - Every finding has a verdict backed by a cited source.
 - Valid findings fixed with minimal diffs; validation chain run and reported honestly.
+- Every fix has its behavior-delta row and its coverage rungs run or skip-reasoned; the final report meets the Stage R contract (PR mode) or carries `delta`/`coverage` (local mode).
 - PR mode: replies posted and correctly threaded; commit created (if requested), not pushed unless asked.
 - Local mode: structured report returned with every finding resolved or explicitly deferred with a reason.
