@@ -31,7 +31,7 @@ with THIS story id only, and follow it to completion: its internal loop must end
 review-clean per its own convergence rules. Its findings already land in the
 story `.md` — that file is the ledger for all later stages.
 
-**Stages V, P, A, S.** Read `~/.claude/skills/_shared/verified-delivery-core.md`
+**Stages V, P, A, R, S.** Read `~/.claude/skills/_shared/verified-delivery-core.md`
 (once per run is enough) and execute it as written on the diff this story
 produced. The ledger is this story's `.md` under `_bmad-output/`. Stage 1's
 internal review does NOT substitute for Stage V — tackle-story converges the
@@ -42,6 +42,9 @@ Only after Stage S completes for this story: move to the next one.
 
 ## Reporting
 
-Final message: per story — status, iterations used (stage 1 and stage V
-separately), probe evidence, artifacts written, what shipped (commit/PR), and
-anything escalated. Evidence over adjectives.
+Final message = the core's **Stage R report contract**, per story: what was
+done, behavior + behavior-delta table, logic & data flow with `file:line` hops,
+state machine (mermaid) for stateful flows, key functions/entry points, and
+evidence links — plus status, iterations used (stage 1 and stage V separately),
+artifacts written, what shipped (commit/PR), and anything escalated. Evidence
+over adjectives.

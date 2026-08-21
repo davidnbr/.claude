@@ -39,10 +39,13 @@ thread for trivial edits (project delegation rules apply). Implementers must run
 the project's validation chain (lint, typecheck, tests — as defined by the
 project) and report results verbatim. They do not self-approve.
 
-**Stages V, P, A, S.** Read `~/.claude/skills/_shared/verified-delivery-core.md`
+**Stages V, P, A, R, S.** Read `~/.claude/skills/_shared/verified-delivery-core.md`
 NOW and execute it as written on the full diff stage 1 produced.
 
 ## Reporting
 
-Final message: plan verdict, files changed, stage V rounds, probe evidence,
-artifacts written, what shipped, anything escalated. Evidence over adjectives.
+Final message = the core's **Stage R report contract**, per unit: what was done,
+behavior + behavior-delta table, logic & data flow with `file:line` hops, state
+machine (mermaid) for stateful flows, key functions/entry points, and evidence
+links — plus plan verdict, stage V rounds, artifacts written, what shipped, and
+anything escalated. Evidence over adjectives.

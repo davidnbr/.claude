@@ -158,8 +158,32 @@ case "$GATE" in
     BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
     BASE=${BASE:-main}
     # An unresolvable base means the diff is unknown, not that nothing changed.
+    INFRA_RE='(^|/)(\.github/workflows/|\.github/actions/|terraform/|Dockerfile([./]|$)|docker-compose[^/]*\.ya?ml|\.pre-commit-config\.yaml|action\.ya?ml)'
+    # Repos whose infra lives elsewhere (helm charts, argocd manifests, …) opt in
+    # with one extended-regex line that WIDENS the path match. Sources, first
+    # hit wins: a repo-committed .claude/spec-gates-infra.regex (worktree copy
+    # over main checkout's), else the user-local
+    # ~/.claude/spec-gates-infra.d/<main-checkout-basename>.regex — for repos
+    # that must not carry the file in git.
+    EXTRA_F=""
+    for r in "${ROOTS[@]}"; do
+      [ -f "$r/.claude/spec-gates-infra.regex" ] && EXTRA_F="$r/.claude/spec-gates-infra.regex" && break
+    done
+    if [ -z "$EXTRA_F" ]; then
+      USER_F="$HOME/.claude/spec-gates-infra.d/$(basename "${MAIN_ROOT:-$ROOT}").regex"
+      [ -f "$USER_F" ] && EXTRA_F="$USER_F"
+    fi
+    if [ -n "$EXTRA_F" ]; then
+      EXTRA_RE=$(head -c 512 "$EXTRA_F" | tr -d '\r' | head -n 1)
+      # An invalid regex would make the combined grep fail and silently open
+      # the gate; validate alone first (exit >=2 = bad pattern) and drop it.
+      if [ -n "$EXTRA_RE" ]; then
+        printf '' | grep -E -- "$EXTRA_RE" >/dev/null 2>&1
+        [ $? -le 1 ] && INFRA_RE="${INFRA_RE}|${EXTRA_RE}"
+      fi
+    fi
     if git rev-parse --verify --quiet "origin/${BASE}" >/dev/null 2>&1; then
-      INFRA=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null | grep -E '(^|/)(\.github/workflows/|\.github/actions/|terraform/|Dockerfile([./]|$)|docker-compose[^/]*\.ya?ml|\.pre-commit-config\.yaml|action\.ya?ml)' || true)
+      INFRA=$(git diff --name-only "origin/${BASE}...HEAD" 2>/dev/null | grep -E -- "$INFRA_RE" || true)
     else
       INFRA="origin/${BASE} unresolvable"
     fi

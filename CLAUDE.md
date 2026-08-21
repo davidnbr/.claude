@@ -75,68 +75,16 @@ Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 
 These instructions apply to all projects when using Claude Code or VS Code with Claude.
 
-## Response Writing Style (MANDATORY)
+## Response Writing Style
 
-All responses and output content must follow these rules. The goal is plain, spoken English that is easy to read and easy to follow.
-
-- Write in ASD-STE100 style English.
-- Vary sentence length. Some sentences short. Some longer. Do not make them uniform.
-- Write for the spoken voice.
-
-Do not use any of these:
-
-- Antithesis.
-- Corrective negation ("not X, but Y").
-- Paragraph pinning.
-- Parataxis.
-- Summary beats.
-- Rhetorical crutches.
-- Negative parallelisms.
-- Negative anaphoras.
-- Contrasting pairs.
-- Rule of three.
-- Em dashes.
-- Throat-clearing openers.
-- Landing sentences.
-- Setup and payoff constructions.
-- Parallel sentence structures inside one paragraph.
-- Stacked noun phrases.
-- Filler intensifiers (genuinely, really, truly, actually).
-- Corporate-register verbs (leverage, underscore, reflect).
-- Nominalization.
-- Hedging qualifiers.
-- Performed enthusiasm.
+MANDATORY rules in `~/.claude/rules/writing-style.md` (loads every session).
 
 ## Agent Team
 
-You have access to specialized sub-agents in `~/.claude/agents/`. Delegate complex tasks to the appropriate specialist:
+Specialized sub-agents live in `~/.claude/agents/` (the session lists them with descriptions).
+Delegate complex work to the matching specialist; workflow patterns: `~/.claude/agents/agent-orchestration.md`.
 
-| Agent                         | Role              | When to Use                                      |
-| ----------------------------- | ----------------- | ------------------------------------------------ |
-| `principal-software-engineer` | Lead/Orchestrator | Complex multi-step tasks, architecture decisions |
-| `backend-architect`           | Architect         | API design, service boundaries, scalability      |
-| `database-architect`          | DB Architect      | Data modeling, schema design, CQRS               |
-| `devops-engineer`             | Implementer       | CI/CD, Terraform, Docker, ECS                    |
-| `pr-reviewer`                 | Quality Gate      | PR reviews, security audits                      |
-| `error-detective`             | Investigator      | Log analysis, root cause analysis                |
-| `search-specialist`           | Researcher        | Documentation, best practices research           |
-| `context-manager`             | Coordinator       | Multi-session context preservation               |
-| `task-decomposition-expert`   | Planner           | Breaking down complex tasks                      |
-| `architect-review`            | Reviewer          | Architecture review and validation               |
-
-See `~/.claude/agents/agent-orchestration.md` for workflow patterns.
-
-## Code Quality Standards
-
-- Follow SOLID principles pragmatically — simplicity over purity
-- Adhere to Clean Code principles
-- Enforce YAGNI, KISS, DRY
-- Write tests alongside implementation
-- Use guard clauses and early returns
-- Keep functions small and intention-revealing
-- Handle errors explicitly — never swallow exceptions
-
-### Engineering guardrails (apply to every edit, with or without a skill)
+## Engineering guardrails (apply to every edit, with or without a skill)
 
 - **Comments:** add one only when the *why* is non-obvious; when you do, keep it to
   one terse line. Never restate what the code already says. Rationale, evidence and
@@ -165,12 +113,8 @@ Before writing new code or adding abstractions, run this sequence:
 
 ## Security
 
-- Never commit secrets or credentials
-- Validate and sanitize all user input
-- Use parameterized queries (no SQL injection)
-- Follow OWASP Top 10 guidelines
-- Least-privilege IAM policies
-- Encrypt at rest and in transit
+- Never commit secrets or credentials (full rules: Delivery Protocol below + `~/.claude/rules/verification-lessons.md`)
+- Least-privilege IAM; validate all user input; encrypt at rest and in transit
 
 ## When Working on Any Project
 

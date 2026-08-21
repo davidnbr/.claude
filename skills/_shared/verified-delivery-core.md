@@ -26,6 +26,39 @@ it as written.
    queue/async behavior, real error paths. Mocks only at true system boundaries,
    and never shaped to make a failing test pass — a test that cannot fail is a
    defect.
+9. **Coverage ladder.** Every behavior change ships with tests at every rung the
+   stack supports — discovered from the repo's own harness, not assumed:
+   unit → integration → e2e → mutation. Mutation testing runs where a maintained
+   tool exists for the stack (verify availability at run time; e.g. Stryker for
+   JS/TS, mutmut for Python, cargo-mutants for Rust). For declarative stacks
+   (Terraform / Helm / K8s manifests) the equivalent rungs are: schema/contract
+   tests (kubeconform, conftest/OPA, `terraform validate` + plan assertions),
+   policy scans (checkov/trivy), and an empirical probe against a real or
+   rendered system. Each rung skipped gets a one-line reason in the ledger —
+   silence is not a skip.
+10. **Wire-level verification beats simulation.** A simulator/trace/dry-run
+   proves matching or rendering, never end-to-end effect. "Config accepted",
+   "manifest Valid", "trace matched" are intermediate signals; the claim "it
+   works" requires observing the real request/traffic/run land where intended
+   (logs, response bodies, run IDs). For deployed third-party config (cloud
+   dashboards, SaaS rules), verification includes a read-back of the deployed
+   state — the runbook being correct does not prove the deployed object matches it.
+11. **Systems Verification Lessons (global CLAUDE.md) apply in full**, notably:
+   verify the checker before the code (a failing gate can be a broken gate —
+   controlled reproduction decides); fail-safe extension points (invalid config
+   input degrades to the safe default, never opens a gate); state claims
+   verified at write time; withdrawal is a full unwind.
+
+## Stage checklist (copy per unit, check off as you go)
+
+```
+- [ ] Ledger resolved
+- [ ] Stage V: adversarial Workflow loop clean (round N ≤ 3)
+- [ ] Stage P: probes run (or skip reason in ledger); behavior-delta table written
+- [ ] Stage A: verdict line + delta section + change-log rows in ledger (+ .omc/state mirrors)
+- [ ] Stage R: report contract complete (summary, behavior+delta, data flow, state machine, key functions, evidence)
+- [ ] Stage S: shipped per project rules; gates passed on merit
+```
 
 ## Ledger resolution (do this first)
 
@@ -98,10 +131,14 @@ while true:
 - **Behavior change** → smoke it against the running system, not just unit tests
   (use the project's harness: e2e browser tests, real HTTP with auth, real CLI runs).
   Record the evidence (run IDs, log lines) in the ledger.
-- **Infra/CI change** → produce the **behavior-delta table**: one row per run
-  type (branch / main / tag / prod / schedule …), before vs. after; every
-  narrowing is its own flagged row. Where a real run is cheaply possible
-  (temporary probe commit, sandbox), run it — "the config parses" is not evidence.
+- **Every unit** → produce the **behavior-delta table** (not only infra): one row
+  per affected caller / run type / input class, before vs. after; every narrowing
+  or regression is its own flagged row, never buried in prose. A unit with no
+  externally visible change writes the single row `none — internal only` (that
+  claim is itself verified, not assumed). Infra/CI changes additionally get one
+  row per run type (branch / main / tag / prod / schedule …). Where a real run is
+  cheaply possible (temporary probe commit, sandbox), run it — "the config
+  parses" is not evidence.
 - Skipping a probe requires an explicit one-line reason in the ledger.
 
 ## Stage A — Gate artifacts
@@ -110,14 +147,35 @@ Write into the ledger (and mirror to `.omc/state/` as hook fallback):
 
 1. Verdict line: `Adversarial review: PASSED (round N, <date>)` — also write the
    same line to `.omc/state/adversarial-verdict`.
-2. If infra was touched: a `## Behavior delta` section with the table — also
+2. A `## Behavior delta` section with the table (every unit, per Stage P) — also
    mirror the table to `.omc/state/delta-table.md`.
 3. Change-log row(s) for the decisions made.
+
+## Stage R — Report contract
+
+The final report — and its mirror in the ledger as a `## Delivery report`
+section — MUST contain, per unit:
+
+1. **What was done.** Plain-language summary of the change and why.
+2. **Behavior.** Externally visible behavior now, with the behavior-delta table
+   inline (or a link to the ledger section holding it).
+3. **Logic & data flow.** The call/data path end to end, one line per hop, each
+   hop cited `file:line` (e.g. `edge/LB → ingress route (route.yaml:42) →
+   auth proxy (values.yaml:17) → upstream service`). For code: entry point → key
+   branches → side effects.
+4. **State machine.** Any stateful or multi-phase flow (auth handshakes, retries,
+   reconciliation loops, lifecycle transitions) gets a `mermaid stateDiagram-v2`
+   of states and transitions **as implemented**, not as designed. Pure stateless
+   transforms may skip it with a one-line reason.
+5. **Key functions / entry points.** The 3–10 symbols or resources a maintainer
+   would read first, each with `file:line` and a one-line role.
+6. **Evidence links.** Log lines, run IDs, test output, probe results backing
+   every claim above.
 
 ## Stage S — Ship
 
 Follow the project's own rules (commit message conventions, Co-Authored-By,
 draft PR etc.). The spec-gates hooks will now pass on their own merits — if a
 gate denies, the missing artifact is real missing work: produce it, never skip
-it. Surface in the final report: what shipped, rounds needed, probe evidence,
-and anything escalated.
+it. The final message delivers the Stage R report plus: what shipped, rounds
+needed, and anything escalated.
