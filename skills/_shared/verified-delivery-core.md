@@ -78,7 +78,22 @@ Run the loop via the **Workflow tool** (this skill directs you to call it — th
 is the required opt-in). Do NOT replace it with a single reviewer subagent: the
 Workflow's value is code-enforced convergence and schema-validated outputs.
 
-Template (adapt DIMENSIONS to the diff; keep the structure):
+**Scaling rule (embed, do not improvise)** — effort follows diff complexity,
+per Anthropic's multi-agent guidance (agents overinvest on simple tasks unless
+given explicit scaling rules):
+
+- **Tiny diff** (≤2 files AND no security-adjacent path — auth/authz, network
+  policy, secrets, input parsing): 3 dimensions — `correctness`, `tests`,
+  `regressions`.
+- **Standard/broad diff**: all 5 dimensions.
+- **Regulated or sensitive data** (PHI/PII) in the diff: add a domain lens.
+
+**Verify phase** — one refuter per finding, judging through a 3-lens rubric in
+a single call (a single rubric call proved more consistent than one judge per
+component, and costs 1/3). Exception: `critical` findings keep 3 independent
+refuters — defense in depth where a wrong kill is costliest.
+
+Template (pick DIMENSIONS by the scaling rule; keep the structure):
 
 ```js
 export const meta = {
@@ -90,23 +105,32 @@ const FINDINGS = { type:'object', required:['findings'], properties:{ findings:{
   type:'object', required:['title','file','severity','claim'], properties:{
     title:{type:'string'}, file:{type:'string'}, line:{type:'integer'},
     severity:{enum:['critical','major','minor']}, claim:{type:'string'}, fix:{type:'string'} } } } } }
-const VERDICT = { type:'object', required:['refuted','reason'], properties:{ refuted:{type:'boolean'}, reason:{type:'string'} } }
-const DIMENSIONS = [
+const LENS = { type:'object', required:['refuted','reason'], properties:{ refuted:{type:'boolean'}, reason:{type:'string'} } }
+const RUBRIC = { type:'object', required:['correctness','exploitability','reproduces'],
+  properties:{ correctness: LENS, exploitability: LENS, reproduces: LENS } }
+const ALL_DIMENSIONS = [
   { key:'correctness', prompt:'Hunt real bugs, broken invariants, unhandled failure modes in the diff. Cite file:line. Report only defects you can articulate a concrete failure scenario for.' },
   { key:'security',    prompt:'Hunt security/permission/tenant-isolation/PHI-or-secret-leak issues in the diff. Cite the violated rule or doc.' },
   { key:'patterns',    prompt:'Review as a senior lead engineer: violations of the project architecture, stack best practices (project CLAUDE.md, ADRs, current framework docs — verify against them, do not assume), and maintainability/extensibility defects (rigid coupling, missing customization seams, copy-paste divergence).' },
   { key:'tests',       prompt:'Hunt untested behavior changes, mocked-to-pass tests, assertions that cannot fail, and parity gaps: tests whose mocks diverge from the real dev/production cloud behavior (API response shapes, queue/async semantics, error paths). Mocks only at true system boundaries.' },
   { key:'regressions', prompt:'Enumerate every behavior delta the diff introduces (per run type / caller / input class). Flag any narrowing not explicitly declared.' },
 ]
+// Scaling rule: tiny diff → these 3; standard → all 5; regulated data → all 5 + domain lens.
+const TINY = false  // set from the diff before launching
+const DIMENSIONS = TINY ? ALL_DIMENSIONS.filter(d => ['correctness','tests','regressions'].includes(d.key)) : ALL_DIMENSIONS
+const refute = f => agent(
+  `Adversarially REFUTE this finding through ALL three rubric lenses — correctness (is the claim true in this code?), exploitability (does it actually matter?), reproduces (is the failure scenario reachable?). Default each lens to refuted=true unless you can confirm it concretely: ${JSON.stringify(f)}`,
+  { label:`verify:${f.file}`, phase:'Verify', schema: RUBRIC })
+const confirms = r => r ? ['correctness','exploitability','reproduces'].filter(k => !r[k].refuted).length : 0
 const results = await pipeline(
   DIMENSIONS,
   d => agent(`${d.prompt}\n\nScope: the current git diff (staged+unstaged) plus untracked new files.`,
              { label:`review:${d.key}`, phase:'Review', schema: FINDINGS }),
   r => parallel((r?.findings ?? []).map(f => () =>
-    parallel(['correctness','exploitability','does-it-reproduce'].map(lens => () =>
-      agent(`Adversarially REFUTE this finding via the ${lens} lens. Default refuted=true if you cannot confirm it concretely: ${JSON.stringify(f)}`,
-            { label:`verify:${f.file}`, phase:'Verify', schema: VERDICT })))
-      .then(vs => ({ ...f, real: vs.filter(Boolean).filter(v => !v.refuted).length >= 2 }))))
+    f.severity === 'critical'
+      ? parallel([1,2,3].map(() => () => refute(f)))
+          .then(vs => ({ ...f, real: vs.filter(v => confirms(v) >= 2).length >= 2 }))
+      : refute(f).then(v => ({ ...f, real: confirms(v) >= 2 }))))
 )
 return { confirmed: results.flat().filter(Boolean).filter(f => f.real) }
 ```
