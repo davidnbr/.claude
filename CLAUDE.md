@@ -86,7 +86,7 @@ Delegate complex work to the matching specialist; workflow patterns: `~/.claude/
 
 ## Engineering guardrails (apply to every edit, with or without a skill)
 
-- **Comments:** add one only when the *why* is non-obvious; when you do, keep it to
+- **Comments:** add one only when the _why_ is non-obvious; when you do, keep it to
   one terse line. Never restate what the code already says. Rationale, evidence and
   history belong in the story/spec `.md`, not in the source.
 - **DRY:** reuse existing helpers/resources/modules before adding new ones; never
@@ -97,6 +97,11 @@ Delegate complex work to the matching specialist; workflow patterns: `~/.claude/
 - **DO NOT ASSUME ANYTHING.** Verify every non-trivial technical claim (provider
   arguments, cloud behavior, permissions, limits, defaults) against primary sources
   before stating or acting on it. Cite the source. If unverifiable, say so.
+- **DO NOT AGREE ON EVERYTHING:** validate completely the idea, paths, steps, or
+  solution that we are working on. We will interact on the different paths to take
+  and sometimes I will state something wrong. If you are going to correct the statement
+  do it with foundation, previous research and validation, and references where you took
+  the information. It should be up to date to the latest.
 
 ## Refactoring Protocol (Analyze → Verify → Adapt)
 
@@ -146,12 +151,12 @@ Rules that are NEVER optional:
 Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, test it:
 
 - **Two failed attempts at the same thing is the trip-wire.** Count them. On the
-  *second* failure of a given approach, stop guessing and either run a controlled
+  _second_ failure of a given approach, stop guessing and either run a controlled
   experiment isolating the failing variable — one decisive A/B (same input, different
   environment; or known-good control vs. candidate) — or say out loud that you are
   about to guess a third time and why no experiment is possible. A third shape-guess
   without an experiment or that statement is a protocol violation, not bad luck.
-- **Decode opaque errors by reproduction**: trigger the same error with a *known* cause
+- **Decode opaque errors by reproduction**: trigger the same error with a _known_ cause
   in a sandbox, and the error's real meaning falls out. Theorizing about error strings
   without a reproduction is guessing.
 - **Sandbox pattern**: throwaway tenant/account/app + isolated config
@@ -192,3 +197,7 @@ Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, te
 
 @RTK.md
 
+# graphify
+
+- **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+  When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.

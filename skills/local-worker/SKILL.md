@@ -21,7 +21,7 @@ subscription/API billing, regardless of how much the worker churns.
 1. **Plan.** Write a precise, self-contained task spec for the worker: exact
    files, exact change, acceptance criteria. Worker has no memory of this
    conversation — spec must stand alone.
-2. **Dispatch.** Run `scripts/delegate_worker.sh` (see below) with the task
+2. **Dispatch.** Run `~/.claude/skills/local-worker/scripts/delegate_worker.sh` (see below) with the task
    spec. It blocks until the worker finishes and prints JSON result.
 3. **Review.** `git diff` the worker's changes. Check against acceptance
    criteria.
@@ -44,6 +44,7 @@ scripts/delegate_worker.sh <backend> <model> "<task prompt>" [--continue]
 
 **claude** (Ollama via Anthropic-compatible endpoint, native since Ollama
 v0.14):
+
 - Full tool-calling support (Read/Edit/Bash), same CLAUDE.md/skills loading
   as interactive Claude Code unless `--bare` is added to the script's
   command — keep `--bare` off if the worker needs repo CLAUDE.md context,
@@ -54,6 +55,7 @@ v0.14):
   stable builds can break the agentic loop mid-edit.
 
 **opencode** (native multi-provider, no compat shim needed):
+
 - Model arg form: `ollama/<tag>` (provider/model).
 - Only documented auto-approval flag is the blanket
   `--dangerously-skip-permissions` — there is no granular allowedTools

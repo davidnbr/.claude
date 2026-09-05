@@ -12,7 +12,7 @@ description: >
   available, else adversarial-review). Use when the user asks for a "complete
   PR review", a review "iteration", or a deep/grounded senior review of a
   branch or diff.
-allowed-tools: 'Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr checks:*)'
+allowed-tools: "Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr checks:*)"
 ---
 
 # Complete PR Review

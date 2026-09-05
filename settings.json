@@ -21,10 +21,10 @@
       "Read",
       "Grep",
       "Glob",
-      "WebSearch",
-      "WebFetch"
+      "WebSearch"
     ],
     "deny": [
+      "WebFetch",
       "Read(./.env)",
       "Read(./.env.local)",
       "Read(./.env.development)",
@@ -53,23 +53,11 @@
       "Read(~/.aws/**)",
       "Read(~/.config/gcloud/**)",
       "Read(./config/credentials.json)",
-      "Read(./package-lock.json)",
-      "Read(./yarn.lock)",
-      "Read(./pnpm-lock.yaml)",
       "Read(./Cargo.lock)",
-      "Read(./node_modules/**)",
-      "Read(./target/**)",
-      "Read(./build/**)",
-      "Read(./dist/**)",
-      "Read(./out/**)",
-      "Read(./vendor/**)",
-      "Read(./coverage/**)",
       "Read(./secrets/**)",
       "Read(/proc/**)",
       "Read(~/.netrc)",
       "Read(~/.docker/config.json)",
-      "Read(~/.npmrc)",
-      "Read(~/.pypirc)",
       "Read(~/.git-credentials)",
       "Bash(env)",
       "Bash(env|*)",
@@ -99,23 +87,25 @@
       "Edit(/root/**)",
       "Edit(/usr/**)",
       "Edit(/bin/**)",
-      "Write(../**)",
-      "Write(/etc/**)",
-      "Write(/root/**)",
-      "Write(/usr/**)",
-      "Write(/bin/**)",
-      "Write(~/.bashrc)",
-      "Write(~/.bash_profile)",
-      "Write(~/.profile)",
-      "Write(~/.zshrc)",
+      "Edit(../**)",
+      "Edit(/etc/**)",
+      "Edit(/root/**)",
+      "Edit(/usr/**)",
+      "Edit(/bin/**)",
+      "Edit(~/.bashrc)",
+      "Edit(~/.bash_profile)",
+      "Edit(~/.profile)",
+      "Edit(~/.zshrc)",
       "Read(~/.claude/.omc-config.json)",
       "Read(/home/dbecerra/.claude/.omc-config.json)",
       "Edit(~/.claude/.omc-config.json)",
-      "Write(~/.claude/.omc-config.json)",
+      "Edit(~/.claude/.omc-config.json)",
       "Bash(*omc-config.json*)",
       "Bash(*.omc-config*)",
-      "Edit(/home/dbecerra/.claude/.omc-config.json)",
-      "Write(/home/dbecerra/.claude/.omc-config.json)"
+      "Read(/home/davidnbr98/.claude/.omc-config.json)",
+      "Edit(/home/davidnbr98/.claude/.omc-config.json)",
+      "Edit(/home/davidnbr98/.claude/.omc-config.json)",
+      "Read(/home/davidnbr98/.claude.json)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -154,9 +144,9 @@
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~/*)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -175,7 +165,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "rtk hook claude"
+            "command": "$HOME/.local/bin/rtk hook claude"
           },
           {
             "type": "command",
@@ -235,7 +225,6 @@
     ],
     "Notification": [
       {
-        "matcher": "permission_prompt|agent_needs_input|elicitation_dialog",
         "hooks": [
           {
             "type": "command",
@@ -255,11 +244,14 @@
     "ralph-loop@claude-plugins-official": false,
     "context7@claude-plugins-official": false,
     "oh-my-claudecode@omc": true,
-    "pyright-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
     "gopls-lsp@claude-plugins-official": true,
-    "atlassian@claude-plugins-official": true
+    "cloudflare@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   },
   "extraKnownMarketplaces": {
     "omc": {
@@ -272,6 +264,13 @@
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
+      },
+      "autoUpdate": true
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
       }
     }
   },
@@ -279,11 +278,25 @@
     "enabled": true,
     "allowUnsandboxedCommands": false,
     "network": {
-      "allowUnixSockets": ["/nix/var/nix/daemon-socket/socket"]
+      "allowedDomains": [
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+        "::1"
+      ],
+      "allowUnixSockets": [
+        "/nix/var/nix/daemon-socket/socket"
+      ],
+      "allowLocalBinding": true
     },
     "filesystem": {
-      "allowWrite": ["~/nc", "~/nd"],
-      "denyWrite": ["./.git"]
+      "allowWrite": [
+        "~/nc",
+        "~/nd"
+      ],
+      "denyWrite": [
+        "./.git"
+      ]
     },
     "bwrapPath": "/usr/bin/bwrap"
   },
@@ -296,7 +309,7 @@
   "editorMode": "vim",
   "preferredNotifChannel": "terminal_bell",
   "autoCompactEnabled": true,
-  "teammateMode": "tmux",
+  "teammateMode": "in-process",
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": false
+  "agentPushNotifEnabled": true
 }
