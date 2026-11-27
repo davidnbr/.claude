@@ -86,4 +86,23 @@ echo a > code.py; git add -A; git commit -q --no-verify -m init
 OUT=$(run_hook)
 [ -z "$OUT" ] && echo "PASS: plain repo -> ungated" || { echo "FAIL: plain repo gated: $OUT"; exit 1; }
 
+# Case 9: .ai-work as the only spec dir -> gated, evidence in tasks.md honored.
+git init -q "$T/aiw"; cd "$T/aiw"
+git config user.email t@t; git config user.name t
+mkdir -p .ai-work/changes/01-x
+echo x > .ai-work/changes/01-x/tasks.md
+git add -A; git commit -q --no-verify -m init
+git branch -M main
+git clone -q --bare . "$T/aiw-origin.git"
+git remote add origin "$T/aiw-origin.git"; git fetch -q origin
+git checkout -qb feat
+echo a > code.py; git add -A; git commit -q --no-verify -m code
+OUT=$(run_hook)
+echo "$OUT" | grep -q '"permissionDecision":"deny"' \
+  && echo "PASS: .ai-work code change, no evidence -> deny" \
+  || { echo "FAIL: .ai-work repo not gated: $OUT"; exit 1; }
+printf '## Behavior delta\n| a | b |\n## Coverage\n| unit | ran |\n' > .ai-work/changes/01-x/tasks.md
+OUT=$(run_hook)
+[ -z "$OUT" ] && echo "PASS: .ai-work tasks.md evidence -> allow" || { echo "FAIL: .ai-work evidence not honored: $OUT"; exit 1; }
+
 echo "ALL PASS"

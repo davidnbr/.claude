@@ -78,7 +78,9 @@ The ledger is where findings, solutions, decisions, and verdicts are recorded:
 
 - `_bmad-output/` exists → the story/spike `.md` for this work.
 - else `openspec/` exists → the relevant change/spec `.md`.
-- else → `.omc/state/findings.md` (create `.omc/state/` if needed).
+- else → `.ai-work/changes/NN-<change-name>/tasks.md` (create it per the global
+  CLAUDE.md Work Organization section); cross-change findings go to
+  `.ai-work/notes/findings.md`.
 
 Every stage that produces findings APPENDS them to the ledger; every fix appends
 the implemented solution; every decision gets a change-log row. This is the audit

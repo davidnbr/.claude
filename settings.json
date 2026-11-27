@@ -87,25 +87,32 @@
       "Edit(/root/**)",
       "Edit(/usr/**)",
       "Edit(/bin/**)",
-      "Edit(../**)",
-      "Edit(/etc/**)",
-      "Edit(/root/**)",
-      "Edit(/usr/**)",
-      "Edit(/bin/**)",
       "Edit(~/.bashrc)",
       "Edit(~/.bash_profile)",
       "Edit(~/.profile)",
       "Edit(~/.zshrc)",
       "Read(~/.claude/.omc-config.json)",
-      "Read(/home/dbecerra/.claude/.omc-config.json)",
-      "Edit(~/.claude/.omc-config.json)",
       "Edit(~/.claude/.omc-config.json)",
       "Bash(*omc-config.json*)",
       "Bash(*.omc-config*)",
-      "Read(/home/davidnbr98/.claude/.omc-config.json)",
-      "Edit(/home/davidnbr98/.claude/.omc-config.json)",
-      "Edit(/home/davidnbr98/.claude/.omc-config.json)",
-      "Read(/home/davidnbr98/.claude.json)"
+      "Read(~/.claude.json)",
+      "Read(//**/*.tfstate)",
+      "Read(//**/*.tfstate.*)",
+      "Read(//**/*.tfplan)",
+      "Read(//**/*.tfplan.json)",
+      "Read(//**/tfplan)",
+      "Read(//**/*.tfvars)",
+      "Read(//**/*.tfvars.json)",
+      "Read(~/.claude/history.jsonl)",
+      "Read(~/.claude/stats-cache.json)",
+      "Read(~/.claude/file-history/**)",
+      "Read(~/.claude/session-env/**)",
+      "Read(node_modules/**)",
+      "Read(.env*)",
+      "Read(credentials*)",
+      "Read(.credentials*)",
+      "Read(*.pem*)",
+      "Read(*.key*)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -235,6 +242,7 @@
     ]
   },
   "workflowKeywordTriggerEnabled": false,
+  "enableWorkflows": false,
   "statusLine": {
     "type": "command",
     "command": "sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud-cache.sh ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hud/omc-hud.mjs"
@@ -302,6 +310,14 @@
   },
   "syntaxHighlightingDisabled": false,
   "effortLevel": "medium",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": false,
   "skipWorkflowUsageWarning": true,
