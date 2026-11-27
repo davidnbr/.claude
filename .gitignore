@@ -1,49 +1,35 @@
-# Claude dirs
-.omc*
-backups
-cache
-debug
-file-history
-history*
-hud
-ide
-paste-cache
-plans
-policy-limits.json
-plugins
-projects
-sessions
-settings.json.bak
-shell-snapshots
-stats*
-statsig
-tasks
-teams
-telemetry
-todos
-remote-settings.json
-.last-cleanup
-.last-update-result.json
-daemon*
-jobs
+# Allowlist: ignore everything at the top level, then name what this repo shares.
+# Claude Code and company policy add runtime files over time; they stay ignored by default.
+/*
+!/.gitignore
+!/CLAUDE.md
+!/RTK.md
+!/.mcp.json
+!/settings.json
+!/agents/
+!/commands/
+!/docs/
+!/hooks/
+!/rules/
+!/scripts/
+!/skills/
 
-# Skills dirs
+# Inside shared folders
+/skills/synced/
+/skills/.trash/
 hooks/reporag-*
 .caveman-*
-hooks/stop-notify.log
-**/**.bak
-**/**.**.bak
-**/**.**.bak.*
-ledger-backups/
+__pycache__/
+*.log
 
-# node
-history.jsonl
+# Secrets and backups, wherever they sit
 .credentials*
-*.backup.*
-*-cache.json
-.session-stats.json
-
-# keys
 *.pem*
 *.key*
 *.keys*
+*.backup.*
+**/*.bak
+**/*.bak.*
+*-cache.json
+.session-stats.json
+ledger-backups/
