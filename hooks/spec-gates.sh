@@ -77,7 +77,7 @@ ROOTS=("$ROOT")
 # other.
 SPEC_DIRS=()
 LOCAL_SPEC_DIRS=()
-for d in _bmad-output openspec; do
+for d in _bmad-output openspec .ai-work; do
   # Trackedness is decided by the spec documents themselves: a lone tracked
   # placeholder (.gitkeep) in an otherwise-ignored dir must not flip the branch.
   if git ls-files --cached -- "$d" 2>/dev/null | grep -q '\.md$'; then

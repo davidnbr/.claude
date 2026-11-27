@@ -18,11 +18,28 @@ Project-level rules (`.claude/rules/`, `CLAUDE.md`) override everything here —
 - Least-privilege IAM — no `*` actions/resources in production policies
 - Encrypt at rest (KMS/CMK) and in transit (TLS)
 - Modules: pin sources by version/ref; expose variables with types, descriptions, and `validation` blocks; mark sensitive outputs `sensitive = true`
+- Module defaults: put defaults in the module `variables.tf` with `nullable = false`. The caller passes `lookup(each.value, "<name>", null)`, so a value that is not given takes the module default. A value that all or most instances share is a module default; the caller declares only what differs
+- Objects that the stack does not create come from data sources, not from written IDs
+
+## Locals and blocks
+
+- Use locals sparingly. A value or `for_each` map that the resource files use once is a plain value where it is used
+- A local that one file uses more than once goes in a `locals {}` block at the top of that file. `locals.tf` holds only locals that more than one resource file uses; with none, there is no `locals.tf`
+- Uses in `imports.tf` do not count when you decide where a local goes
+- Write nested blocks literally. Use `dynamic` only when the block changes per `for_each` instance
+- When the provider compares nested blocks by position, keep the live order and add a one-line comment that says so
+
+## Import blocks
+
+- Keep import blocks after the import, as a historical record
+- `imports.tf` is the record of an import that runs once. It has its own `locals {}` block at the top and its own literal keys, and it shares no local or `for_each` map with the resource files. A changed resource gets a new import, not an edit of the old keys
+- In an import `to`, the index is a map key (`each.key`) or a literal string. Do not build the index with a string template
 
 ## Secrets & state
 
 - `sensitive = true` only masks CLI output — the value still sits in **plaintext in state**. Acceptable for credentials already entrusted to the state backend; never acceptable for certificate/PFX blobs, private keys, or their passwords — keep those out of Terraform entirely, manage out-of-band, and document the runbook
 - Never hardcode secrets in `.tf`/`.tfvars`; source from the platform's secret store (SSM/Secrets Manager, Key Vault, TF Cloud workspace variables)
+- Never manage secret values or certificate contents of a secret store (Key Vault, Secrets Manager) in Terraform. Other resources reference them by ID or URI only, so state never holds a secret or a certificate in plain text
 - Org policy (Azure Policy, AWS SCP) may reject resources created without required tags — this applies to out-of-band CLI creations too; tag them consistently and mark them as not-Terraform-managed (e.g. `Terraform = "false"`)
 
 ## AWS

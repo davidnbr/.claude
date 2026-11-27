@@ -14,6 +14,7 @@ exits 0 (allow / fall through to normal permission checks).
 """
 import json
 import re
+import shlex
 import sys
 
 
@@ -49,6 +50,78 @@ SECRET_FILE = re.compile(
     r"|/\.config/gcloud/"
 )
 
+# --- Terraform state, saved plans, tfvars ---------------------------------
+# A file name needs a stem character or glob before the extension, so a regex
+# like `\.tfstate` in a grep of .gitignore passes. A bare `tfplan` needs a dir.
+TF_FILE = re.compile(
+    r"[\w*?-]\.(tfstate(\.[\w.-]*)?|tfplan(\.json)?|tfvars(\.json)?)(?![\w-])"
+    r"|[/\\]tfplan(\.[\w.-]*)?(?![\w-])"
+)
+TF_STATE_CMD = re.compile(
+    r"(?<![\w./-])terraform(\s+-\S+)*\s+(show|output|console|state\s+(pull|show))(?![\w-])"
+)
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n(.*?)\n\s*\2[ \t]*(?:\n|$)", re.S)
+HEREDOC_WRITERS = {"cat", "tee"}
+SEGMENT_BREAKS = {";", "&", "&&", "|", "||", "|&", "(", ")", ";;"}
+# Commands that only name a path and never print its content.
+NAME_ONLY = {"ls", "stat", "test", "[", "rm", "mkdir", "echo", "printf"}
+GIT_NAME_ONLY = {"check-ignore", "ls-files", "status"}
+
+
+def _segments(cmd: str):
+    lexer = shlex.shlex(cmd.replace("\n", ";"), posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    seg = []
+    for tok in lexer:
+        if tok in SEGMENT_BREAKS:
+            if seg:
+                yield seg
+            seg = []
+        else:
+            seg.append(tok)
+    if seg:
+        yield seg
+
+
+def _name_only(seg) -> bool:
+    words = [t for t in seg if not re.match(r"^\w+=", t)]
+    if not words or any("`" in t for t in words):
+        return False
+    prog = words[0].rsplit("/", 1)[-1]
+    if prog == "git":
+        sub = next((t for t in words[1:] if not t.startswith("-")), "")
+        return sub in GIT_NAME_ONLY
+    # Terraform reads that print state are denied earlier by TF_STATE_CMD.
+    return prog in NAME_ONLY or prog == "terraform"
+
+
+def detect_terraform(cmd: str):
+    """Return a reason if the command reads a Terraform state, plan or tfvars file."""
+    # A heredoc into cat/tee is text being written; into anything else it is code.
+    code_bodies = []
+
+    def strip_body(m):
+        line = cmd[cmd.rfind("\n", 0, m.start()) + 1:m.start()]
+        words = re.split(r"[;&|()]", line)[-1].split()
+        prog = words[0].rsplit("/", 1)[-1] if words else ""
+        if prog not in HEREDOC_WRITERS:
+            code_bodies.append(m.group(3))
+        return "<<" + m.group(2) + "\n"
+
+    body_free = HEREDOC.sub(strip_body, cmd)
+    if any(TF_STATE_CMD.search(deobfuscate(s)) for s in [body_free, *code_bodies]):
+        return "reads Terraform state (terraform show/output/state)"
+    if any(TF_FILE.search(b) for b in code_bodies):
+        return "reads a Terraform state, plan or tfvars file"
+    try:
+        for seg in _segments(body_free):
+            if not _name_only(seg) and any(TF_FILE.search(t) for t in seg):
+                return "reads a Terraform state, plan or tfvars file"
+    except ValueError:
+        if TF_FILE.search(body_free):
+            return "reads a Terraform state, plan or tfvars file"
+    return None
+
 
 def deobfuscate(cmd: str) -> str:
     """Collapse the cheapest evasions: stripped quotes, backslash escapes,
@@ -73,7 +146,7 @@ def detect(cmd: str):
         return f"references a secret environment variable (${{{m.group('name')}}})"
     if SECRET_FILE.search(s):
         return "reads an on-disk credential file"
-    return None
+    return detect_terraform(cmd)
 
 
 def main() -> int:

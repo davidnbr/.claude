@@ -116,6 +116,113 @@ Before writing new code or adding abstractions, run this sequence:
    - **Adapt** (one small structural change) when it enables full reuse.
    - **Never duplicate** logic that already handles edge cases — duplication means two places to break.
 
+## Work Organization (`.ai-work/`)
+
+Use this when the repo has no `_bmad-output/` and no `openspec/`. If one of them exists, use it.
+A project `CLAUDE.md` or `AGENTS.md` that names another location wins over this section.
+`.ai-work/` is committed to git.
+
+Create `.ai-work/` at the repo root when work first produces something worth keeping.
+Create each subfolder only when its first file needs it.
+
+```text
+.ai-work/
+  roadmap.md
+  explorations/
+  changes/
+    01-add-backup-alerts/
+      specs/spec.md
+      tasks.md
+    archive/
+      2026-10-16-01-add-backup-alerts/
+  sessions/
+    01-plan-backup-alerts.md
+  notes/
+```
+
+| Path | Holds | Write it when |
+|---|---|---|
+| `roadmap.md` | High-level view of all work. One row per change: number and name, status, one-line goal, link to its folder. | A change is created, changes status or is archived. |
+| `explorations/` | Investigations, research, findings and verifications with sources. One file per topic: `YYYY-MM-DD-<topic>.md`. Tag each claim VERIFIED, PARTIAL or OPEN. | You investigate something that is not yet a change. |
+| `changes/NN-<change-name>/` | One epic or large story. `NN` is two digits, the next free number across `changes/` and `changes/archive/`, never reused. `<change-name>` is short kebab-case and starts with a verb. | Work is agreed and has more than one task. |
+| `changes/NN-<change-name>/specs/spec.md` | Technical spec: scope, design, constraints, sources, and requirements as `#### Scenario:` blocks (Given / When / Then). Optional. | The change needs a design that someone must review. |
+| `changes/NN-<change-name>/tasks.md` | Task checklist and the ledger for the change. | Always, for every change. |
+| `changes/archive/YYYY-MM-DD-NN-<change-name>/` | Finished changes, moved here whole. The date is the archive date. | All tasks are checked or explicitly dropped, and gate artifacts exist if the change was gated. |
+| `sessions/NN-<session-name>.md` | Resume index for one conversation. `NN` is two digits, the next free number in `sessions/`, never reused. `<session-name>` is short kebab-case that names the session goal. See "Session files" below. | Created at session start, completed at session end or before context is summarized. |
+| `notes/` | Decisions, adversarial verdicts, coverage, behavior-delta tables, verification notes, sources notes (`YYYY-MM-DD-<topic>-sources.md`) and cross-change findings (`notes/findings.md`). | The note does not belong to one change or one exploration. |
+
+`tasks.md` shape:
+
+```markdown
+# NN-<change-name>
+
+Status: proposed | in-progress | blocked | done
+Spec: specs/spec.md (or n/a)
+
+## Tasks
+- [ ] 1.1 <task>
+
+## Ledger
+| Date | Task | Action, finding or decision | Result | Evidence |
+|---|---|---|---|---|
+```
+
+### Session files
+
+A session is one Claude Code conversation. A resumed conversation, or one that is summarized
+mid-way, keeps the same file. A new conversation gets the next number.
+
+The ledger records what happened to a change. The session file records what happened in one
+conversation and where to resume. It links to ledger rows, explorations and notes. It does not
+copy them. Test: if a line could live in a ledger, exploration or note, write it there and link it.
+
+```markdown
+# NN-<session-name> (YYYY-MM-DD)
+
+## Goal
+<what the user asked for in this conversation>
+
+## Touched
+- changes/NN-<name>/tasks.md: tasks 1.2, 1.3 (ledger rows of YYYY-MM-DD)
+- explorations/YYYY-MM-DD-<topic>.md: created
+
+## Instructions and approvals from chat
+- <preference, approval or direction given in chat, with a link to where it was recorded>
+
+## Stopped at
+<the exact state when the conversation ended: last command, what was running, what failed>
+
+## Next
+1. <first action for the next session>
+
+## Open questions
+- <question for the user, or a blocker>
+```
+
+Never put evidence, command output, findings, raw transcripts, secrets, PII or customer data in a session file.
+
+### Sources
+
+- Record each source in a sources note: `notes/YYYY-MM-DD-<topic>-sources.md`, one table row per source:
+  `| Source (URL, or path or command checked) | What it confirms | Status (VERIFIED, PARTIAL, FAILED FETCH) |`
+- A ledger row, exploration or spec cites the URL in its own text and links the sources note.
+- For a local check, record the path or the command. Do not save its full output as a source.
+- Download web pages, PDFs, spreadsheets, man pages and code files only to read or grep them.
+  Save them in the session scratchpad or the system temp folder. Never save them in the repo, and never commit them.
+
+### Rules
+
+- At session start: read `roadmap.md`, the latest session file and the `tasks.md` of each active
+  change, then create the new session file with its Goal.
+- A finding for one change goes in that change's ledger. A finding that crosses changes goes in
+  `notes/findings.md`. Research results stay in the exploration file.
+- When an exploration turns into work, create the change and link the exploration from `spec.md` or `tasks.md`.
+- Update `roadmap.md` in the same step as a change status update or archive move.
+- Archive with `git mv`, then fix links in `roadmap.md` and in session files that point to the change.
+- Append to ledgers. Never rewrite earlier rows.
+- Gate artifacts (verdict line, `## Behavior delta`, `## Coverage`) go in the change's `tasks.md`,
+  with copies in `notes/`.
+
 ## Security
 
 - Never commit secrets or credentials (full rules: Delivery Protocol below + `~/.claude/rules/verification-lessons.md`)
@@ -186,6 +293,7 @@ Docs-reading is the floor, not the ceiling. When a claim is cheaply testable, te
 - **Findings ledger.** Reviews and investigations append findings — and, when
   addressed, the implemented solutions — to the relevant story/spike `.md`, with a
   change-log row per decision. The doc is the audit trail that survives the session.
+  Without BMAD or OpenSpec, that doc is the change's `tasks.md` under `.ai-work/` (see Work Organization).
 
 ## Technology Preferences
 

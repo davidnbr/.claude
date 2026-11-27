@@ -16,7 +16,7 @@ it. You are the pipeline orchestrator in the main thread.
 2. Resolve the spec source: `openspec/` change doc if present and referenced;
    otherwise the user's task description. Ambiguous scope → ask once, up front.
 3. Resolve the ledger per the core's ledger-resolution rules
-   (`openspec/` doc, else `.omc/state/findings.md` — create it).
+   (`openspec/` doc, else `.ai-work/changes/NN-<change-name>/tasks.md` — create it).
 
 ## Pipeline — strictly one unit of work at a time
 
